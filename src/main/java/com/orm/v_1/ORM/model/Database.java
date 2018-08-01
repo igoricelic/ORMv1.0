@@ -37,6 +37,15 @@ public class Database {
 		return queries;
 	}
 	
+	public Table getTableByDbName (String tableName) {
+		for(Table table: mapTables.values()) {
+			if(table.getName().equals(tableName)) {
+				return table;
+			}
+		}
+		return null;
+	}
+	
 	public boolean hasTable (String tableName) {
 		for(Table table: getTables()) {
 			if(table.getName().equals(tableName)) {

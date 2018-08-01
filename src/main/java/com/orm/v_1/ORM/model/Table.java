@@ -56,6 +56,15 @@ public class Table {
 		return sb.toString().substring(0, sb.toString().length()-2);
 	}
 	
+	public Column getColumnByDbName (String nameInDb) {
+		for(Column column: columns) {
+			if(column.getNameInDb().equals(nameInDb)) {
+				return column;
+			}
+		}
+		return null;
+	}
+	
 	public String getInsertQuery () {
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO `").append(this.name).append("` (").append(getNamesOfColumns()).append(") VALUES (%s)");

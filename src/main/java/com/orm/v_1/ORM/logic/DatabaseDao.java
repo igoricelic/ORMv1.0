@@ -6,26 +6,24 @@ import java.util.List;
 
 import com.orm.v_1.ORM.query.Query;
 
-public interface DatabaseDao {
+public interface DatabaseDao<T> {
 	
-	public List<?> findAll (Class<?> entity) throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException;
+	public List<T> findAll () throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException;
 	
-	public Object findOne (Class<?> entity, Object id) throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException;
+	public T findOne (Object id) throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException;
 	
-	public Boolean delete (Class<?> entity, Object id) throws SQLException ;
+	public Boolean delete (Object id) throws SQLException;
 	
-	public Object save (Object object) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, SQLException;
+	public T save (T object) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, SQLException;
 	
-	public Boolean saveMore (List<OrmEntity> objects) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, SQLException;
+	public Boolean saveMore (List<T> objects) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, SQLException;
 
-	public Boolean updateOne (OrmEntity object) throws SQLException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException, ParseException;
+	public Boolean updateOne (T object) throws SQLException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException, ParseException;
 	
-	public Boolean updateMore (List<OrmEntity> objects) throws SQLException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException, ParseException;
+	public Boolean updateMore (List<T> objects) throws SQLException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException, ParseException;
 	
-	public void executeQuery (String query) throws SQLException;
+	public List<T> executeNativeQuery (String query) throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException, SQLException;
 	
-	public List<?> executeQuery (Class<?> entity, String query);
-	
-	public List<?> findBy (Class<?> entity, Query query) throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException;
+	public List<T> findBy (Query query) throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException;
 	
 }

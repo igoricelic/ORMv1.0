@@ -15,59 +15,45 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.orm.v_1.ORM.logic.DatabaseDao;
-import com.orm.v_1.ORM.logic.OrmEntity;
 import com.orm.v_1.ORM.model.Column;
 import com.orm.v_1.ORM.model.Database;
 import com.orm.v_1.ORM.model.Id;
 import com.orm.v_1.ORM.model.Table;
 import com.orm.v_1.ORM.query.Query;
 
-public class DatabaseDaoImplementation implements DatabaseDao {
+public class DatabaseDaoImplementation<T> implements DatabaseDao<T> {
 	
 	private static final Logger logger = Logger.getLogger( DatabaseDao.class.getName() );
 	
 	private static final String GENERATED_KEY_COLUMN_NAME = "GENERATED_KEY";
 	
+	private T t;
+	
 	private Database database;
 	private Connection connection;
 	private DateFormat dateFormatter;
 	
-	public DatabaseDaoImplementation(Connection connection, Database database) {
+	public DatabaseDaoImplementation(T t, Connection connection, Database database) {
+		this.t = t;
 		this.database = database;
 		this.connection = connection;
 		this.dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	}
 
 	@Override
-	public List<?> findAll(Class<?> entity) throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException {
-		Table table = this.database.getTableForEntityClass(entity);
+	public List<T> findAll() throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException {
+		Table table = this.database.getTableForEntityClass(t.getClass());
 		String query = String.format("SELECT * FROM `%s`;", table.getName());
 		Statement st = this.connection.createStatement();
 		logger.info(">>> " + query);
 		ResultSet rs = st.executeQuery(query);
-		List<Object> results = new LinkedList<>();
-		Object object = null, value = null;
-		Field field = null;
-		String columnName = null;
-		
-		while(rs.next()) {
-			object = entity.newInstance();
-			for(Column column: table.getColumns()) {
-				columnName = column.getNameInDb();
-				value = rs.getObject(columnName);
-				field = entity.getDeclaredField(column.getNameInModel());
-				field.setAccessible(true);
-				field.set(object, value);
-			}
-			results.add(object);
-		}
-		
-		return results;
+		return extractResultSet(rs);
 	}
 
 	@Override
-	public Object findOne(Class<?> entity, Object id) throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException {
-		Object result = entity.newInstance();
+	public T findOne(Object id) throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException {
+		Class<?> entity = t.getClass();
+		T result = (T) entity.newInstance();
 		Table table = database.getTableForEntityClass(entity);
 		String query = String.format("SELECT * FROM `%s` WHERE `%s`=\"%s\";", table.getName(), table.getId().getNameInDb(), id.toString());
 		Statement st = connection.createStatement();
@@ -89,7 +75,8 @@ public class DatabaseDaoImplementation implements DatabaseDao {
 	}
 
 	@Override
-	public Boolean delete(Class<?> entity, Object id) throws SQLException {
+	public Boolean delete(Object id) throws SQLException {
+		Class<?> entity = t.getClass();
 		Table table = database.getTableForEntityClass(entity);
 		String query = String.format("DELETE FROM `%s` WHERE `%s`=\"%s\";", table.getName(), table.getId().getNameInDb(), id.toString());
 		Statement st = connection.createStatement();
@@ -99,7 +86,7 @@ public class DatabaseDaoImplementation implements DatabaseDao {
 	}
 
 	@Override
-	public Object save(Object object) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, SQLException {
+	public T save(T object) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, SQLException {
 		Table table = this.database.getTableForEntityClass(object.getClass());
 		String query = table.getInsertQuery();
 		
@@ -134,7 +121,6 @@ public class DatabaseDaoImplementation implements DatabaseDao {
 		ps.executeUpdate();
 		ResultSet rs = ps.getGeneratedKeys();
 		
-		System.out.println(object.getClass().getDeclaredFields());
 		if(genPriKey && rs != null && rs.next()) {
 			Integer genValue = rs.getInt(GENERATED_KEY_COLUMN_NAME);
 			Field priKeyField = object.getClass().getDeclaredField(primaryKeyModelName);
@@ -146,20 +132,20 @@ public class DatabaseDaoImplementation implements DatabaseDao {
 	}
 
 	@Override
-	public Boolean saveMore(List<OrmEntity> objects) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, SQLException {
-		for(OrmEntity object: objects) {
+	public Boolean saveMore(List<T> objects) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, SQLException {
+		for(T object: objects) {
 			save(object);
 		}
 		return true;
 	}
 
 	@Override
-	public Boolean updateOne(OrmEntity object) throws SQLException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException, ParseException {
+	public Boolean updateOne(T object) throws SQLException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException, ParseException {
 		Table table = database.getTableForEntityClass(object.getClass());
 		Field field = object.getClass().getDeclaredField(table.getId().getNameInModel());
 		field.setAccessible(true);
 		Object idOfObject = field.get(object);
-		Object oldObject = findOne(object.getClass(), idOfObject);
+		Object oldObject = findOne(idOfObject);
 		Field fieldOldObj = null, fieldObj = null;
 		Object valueOldObj = null, valueObj = null;
 		StringBuilder sb = new StringBuilder(50);
@@ -184,28 +170,17 @@ public class DatabaseDaoImplementation implements DatabaseDao {
 	}
 
 	@Override
-	public Boolean updateMore(List<OrmEntity> objects) throws SQLException, NoSuchFieldException, SecurityException,
+	public Boolean updateMore(List<T> objects) throws SQLException, NoSuchFieldException, SecurityException,
 			IllegalArgumentException, IllegalAccessException, InstantiationException, ParseException {
-		for(OrmEntity object: objects) {
+		for(T object: objects) {
 			updateOne(object);
 		}
 		return true;
 	}
 
 	@Override
-	public void executeQuery(String query) throws SQLException {
-		Statement st = connection.createStatement();
-		st.execute(query);
-	}
-
-	@Override
-	public List<?> executeQuery(Class<?> entity, String query) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<?> findBy(Class<?> entity, Query query) throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException{
+	public List<T> findBy(Query query) throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException{
+		Class<?> entity = t.getClass();
 		query.setDb(database, entity);
 		String queryRes = query.getQuery();
 		logger.info(">>> " + queryRes);
@@ -213,7 +188,7 @@ public class DatabaseDaoImplementation implements DatabaseDao {
 		ResultSet rs = st.executeQuery(queryRes);
 		System.out.println("proslo");
 		Table table = database.getTableForEntityClass(entity);
-		List<Object> results = new LinkedList<>();
+		List<T> results = new LinkedList<>();
 		Object object = null, value = null;
 		Field field = null;
 		String columnName = null;
@@ -227,9 +202,37 @@ public class DatabaseDaoImplementation implements DatabaseDao {
 				field.setAccessible(true);
 				field.set(object, value);
 			}
-			results.add(object);
+			results.add((T) object);
 		}
 
+		return results;
+	}
+
+	@Override
+	public List<T> executeNativeQuery(String query) throws SQLException, InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException {
+		Statement st = this.connection.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		return extractResultSet(rs);
+	}
+	
+	private List<T> extractResultSet (ResultSet rs) throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException, SQLException {
+		Class<?> entity = t.getClass();
+		Table table = this.database.getTableForEntityClass(entity);
+		List<T> results = new LinkedList<>();
+		Object object = null, value = null;
+		Field field = null;
+		String columnName = null;
+		while(rs.next()) {
+			object = entity.newInstance();
+			for(Column column: table.getColumns()) {
+				columnName = column.getNameInDb();
+				value = rs.getObject(columnName);
+				field = entity.getDeclaredField(column.getNameInModel());
+				field.setAccessible(true);
+				field.set(object, value);
+			}
+			results.add((T) object);
+		}
 		return results;
 	}
 
