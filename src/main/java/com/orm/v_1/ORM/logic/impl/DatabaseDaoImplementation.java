@@ -2,6 +2,7 @@ package com.orm.v_1.ORM.logic.impl;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -24,6 +25,8 @@ import com.orm.v_1.ORM.query.Query;
 public class DatabaseDaoImplementation implements DatabaseDao {
 	
 	private static final Logger logger = Logger.getLogger( DatabaseDao.class.getName() );
+	
+	private static final String GENERATED_KEY_COLUMN_NAME = "GENERATED_KEY";
 	
 	private Database database;
 	private Connection connection;
@@ -96,19 +99,23 @@ public class DatabaseDaoImplementation implements DatabaseDao {
 	}
 
 	@Override
-	public Boolean save(OrmEntity object) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, SQLException {
+	public Object save(Object object) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, SQLException {
 		Table table = this.database.getTableForEntityClass(object.getClass());
 		String query = table.getInsertQuery();
 		
 		StringBuilder values = new StringBuilder(50);
 		Field field = null;
 		Object value = null;
+		String primaryKeyModelName = null;
+		boolean genPriKey = false;
 		for(Column column: table.getColumns()) {
 			field = object.getClass().getDeclaredField(column.getNameInModel());
 			field.setAccessible(true);
 			value = field.get(object);
 			if(column.isPrimaryKey() && ((Id)column).isAutoIncrement() && (value == null)) {
 				values.append("null, ");
+				primaryKeyModelName = column.getNameInModel();
+				genPriKey = true;
 				continue;
 			}
 			if(field.getType().equals(Date.class)) {
@@ -123,9 +130,19 @@ public class DatabaseDaoImplementation implements DatabaseDao {
 		}
 		query = String.format(query, values.toString().substring(0, values.toString().length()-2));
 		logger.info(">>> " + query);
-		Statement st = this.connection.createStatement();
+		PreparedStatement ps = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+		ps.executeUpdate();
+		ResultSet rs = ps.getGeneratedKeys();
 		
-		return st.execute(query);
+		System.out.println(object.getClass().getDeclaredFields());
+		if(genPriKey && rs != null && rs.next()) {
+			Integer genValue = rs.getInt(GENERATED_KEY_COLUMN_NAME);
+			Field priKeyField = object.getClass().getDeclaredField(primaryKeyModelName);
+			priKeyField.setAccessible(true);
+			priKeyField.set(object, genValue);
+		}
+
+		return object;
 	}
 
 	@Override

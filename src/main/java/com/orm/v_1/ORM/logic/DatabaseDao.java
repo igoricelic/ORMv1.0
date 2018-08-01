@@ -14,7 +14,7 @@ public interface DatabaseDao {
 	
 	public Boolean delete (Class<?> entity, Object id) throws SQLException ;
 	
-	public Boolean save (OrmEntity object) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, SQLException;
+	public Object save (Object object) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, SQLException;
 	
 	public Boolean saveMore (List<OrmEntity> objects) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, SQLException;
 

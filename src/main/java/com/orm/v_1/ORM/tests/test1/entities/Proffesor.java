@@ -7,9 +7,10 @@ import com.orm.v_1.ORM.annotations.Id;
 import com.orm.v_1.ORM.annotations.Not_Null;
 import com.orm.v_1.ORM.annotations.Table;
 import com.orm.v_1.ORM.annotations.Unique;
+import com.orm.v_1.ORM.logic.OrmEntity;
 
 @Table(name="proffesor")
-public class Proffesor {
+public class Proffesor implements OrmEntity {
 	
 	@Id(auto_increment=true)
 	private Integer id;

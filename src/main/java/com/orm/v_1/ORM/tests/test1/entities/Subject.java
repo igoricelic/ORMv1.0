@@ -5,9 +5,10 @@ import com.orm.v_1.ORM.annotations.Id;
 import com.orm.v_1.ORM.annotations.Not_Null;
 import com.orm.v_1.ORM.annotations.Table;
 import com.orm.v_1.ORM.annotations.Unique;
+import com.orm.v_1.ORM.logic.OrmEntity;
 
 @Table(name="subject")
-public class Subject {
+public class Subject implements OrmEntity {
 	
 	@Id(auto_increment=true)
 	private Integer id;

@@ -6,9 +6,10 @@ import com.orm.v_1.ORM.annotations.Column;
 import com.orm.v_1.ORM.annotations.Id;
 import com.orm.v_1.ORM.annotations.Not_Null;
 import com.orm.v_1.ORM.annotations.Table;
+import com.orm.v_1.ORM.logic.OrmEntity;
 
 @Table(name="class")
-public class SClass {
+public class SClass implements OrmEntity {
 	
 	@Id(auto_increment=true)
 	private Integer id;
