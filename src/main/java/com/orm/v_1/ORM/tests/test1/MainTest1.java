@@ -46,7 +46,17 @@ public class MainTest1 {
 			
 			DatabaseDao<Subject> subjectDao = daoFactory.buildDao(Subject.class);
 			
-			List<Subject> subjects = subjectDao.findByNativeQuery("select * from subject where name like \"Ma%\" or value = 6;");
+			//List<Subject> subjects = subjectDao.findByNativeQuery("select * from subject where name like \"Ma%\" or value = 6;");
+			
+			Subject sub = new Subject();
+			sub.setName("Informatika");
+			sub.setDescritpion("Od skoro tek obavezan predmet.");
+			sub.setValue(8);
+			sub.setCodeIdef("1PL045");
+			
+			subjectDao.save(sub);
+			
+			List<Subject> subjects = subjectDao.findAll();
 			System.out.println(subjects);
 			
 //			Subject s1 = new Subject();

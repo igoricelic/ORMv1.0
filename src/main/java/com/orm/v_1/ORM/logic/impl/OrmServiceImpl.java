@@ -96,8 +96,12 @@ public class OrmServiceImpl implements ORM {
 					throw new NotCompatibleTypesException("Not compatible not null vaules in database and model for column: " + column.getNameInModel() + " and table: " + tableName);
 				}
 				String PRI = "PRI";
+				String UNI = "UNI";
 				if(column.isPrimaryKey() && !PRI.equals(rs.getString(KEY))) {
 					throw new NotCompatibleTypesException("Not compatible primary keys in database and model!!! Column " + column.getNameInModel() + " is not primary key in db.");
+				}
+				if(!column.isPrimaryKey() && column.isUnique() && !UNI.equals(rs.getString(KEY))) {
+					throw new NotCompatibleTypesException("Not compatible unique column values!!! Column " + column.getNameInModel() + " is not unique in db.");
 				}
 				if(column.isPrimaryKey()) {
 					Id id = (Id) column;

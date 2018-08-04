@@ -1,8 +1,6 @@
 package com.orm.v_1.ORM.logic.impl;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,15 +27,14 @@ public class DatabaseDaoImplementation<T> implements DatabaseDao<T> {
 	
 	private static final String GENERATED_KEY_COLUMN_NAME = "GENERATED_KEY";
 	
-	private T t;
+	private Class<T> entity;
 	
 	private Database database;
 	private Connection connection;
 	private DateFormat dateFormatter;
 	
-	public DatabaseDaoImplementation(T t, Connection connection, Database database) {
-		this.t = t;
-		
+	public DatabaseDaoImplementation(Class<T> clazz, Connection connection, Database database) {
+		entity = clazz;
 		this.database = database;
 		this.connection = connection;
 		this.dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -45,7 +42,7 @@ public class DatabaseDaoImplementation<T> implements DatabaseDao<T> {
 
 	@Override
 	public List<T> findAll() throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException {
-		Table table = this.database.getTableForEntityClass(t.getClass());
+		Table table = this.database.getTableForEntityClass(entity);
 		String query = String.format("SELECT * FROM `%s`;", table.getName());
 		Statement st = this.connection.createStatement();
 		logger.info(">>> " + query);
@@ -55,8 +52,7 @@ public class DatabaseDaoImplementation<T> implements DatabaseDao<T> {
 
 	@Override
 	public T findOne(Object id) throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException {
-		Class<?> entity = t.getClass();
-		T result = (T) entity.newInstance();
+		T result = entity.newInstance();
 		Table table = database.getTableForEntityClass(entity);
 		String query = String.format("SELECT * FROM `%s` WHERE `%s`=\"%s\";", table.getName(), table.getId().getNameInDb(), id.toString());
 		Statement st = connection.createStatement();
@@ -79,7 +75,6 @@ public class DatabaseDaoImplementation<T> implements DatabaseDao<T> {
 
 	@Override
 	public Boolean delete(Object id) throws SQLException {
-		Class<?> entity = t.getClass();
 		Table table = database.getTableForEntityClass(entity);
 		String query = String.format("DELETE FROM `%s` WHERE `%s`=\"%s\";", table.getName(), table.getId().getNameInDb(), id.toString());
 		Statement st = connection.createStatement();
@@ -183,7 +178,6 @@ public class DatabaseDaoImplementation<T> implements DatabaseDao<T> {
 
 	@Override
 	public List<T> findBy(Query query) throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException{
-		Class<?> entity = t.getClass();
 		query.setDb(database, entity);
 		String queryRes = query.getQuery();
 		logger.info(">>> " + queryRes);
@@ -219,7 +213,6 @@ public class DatabaseDaoImplementation<T> implements DatabaseDao<T> {
 	}
 	
 	private List<T> extractResultSet (ResultSet rs) throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException, SQLException {
-		Class<?> entity = t.getClass();
 		Table table = this.database.getTableForEntityClass(entity);
 		List<T> results = new LinkedList<>();
 		Object object = null, value = null;
