@@ -8,6 +8,12 @@ import com.orm.v_1.ORM.logic.DatabaseDao;
 import com.orm.v_1.ORM.logic.DatabaseDaoFactory;
 import com.orm.v_1.ORM.logic.ORM;
 import com.orm.v_1.ORM.logic.impl.OrmServiceImpl;
+import com.orm.v_1.ORM.query.Query;
+import com.orm.v_1.ORM.query.criterion.Criterion;
+import com.orm.v_1.ORM.query.criterion.CriterionModel;
+import com.orm.v_1.ORM.query.criterion.UnionCriteria;
+import com.orm.v_1.ORM.query.criterion.enums.ComparationOperator;
+import com.orm.v_1.ORM.query.criterion.enums.QueryOperator;
 import com.orm.v_1.ORM.tests.test1.entities.Proffesor;
 import com.orm.v_1.ORM.tests.test1.entities.SClass;
 import com.orm.v_1.ORM.tests.test1.entities.Subject;
@@ -23,7 +29,7 @@ public class MainTest1 {
 			entities.add(Proffesor.class);
 			DatabaseDaoFactory daoFactory = orm.generateMapping(Constants.DB, entities, false);
 			
-			DatabaseDao<Proffesor> proffesorDao = daoFactory.buildDao(Proffesor.class);
+//			DatabaseDao<Proffesor> proffesorDao = daoFactory.buildDao(Proffesor.class);
 			
 //			Proffesor p1 = new Proffesor();
 //			p1.setName("Giga");
@@ -35,10 +41,13 @@ public class MainTest1 {
 //			proffesorDao.save(p1);
 //			System.out.println("After: "+p1.toString());
 			
-			List<Proffesor> proffesors = proffesorDao.findAll();
-			System.out.println(proffesors);
+//			List<Proffesor> proffesors = proffesorDao.findAll();
+//			System.out.println(proffesors);
 			
 			DatabaseDao<Subject> subjectDao = daoFactory.buildDao(Subject.class);
+			
+			List<Subject> subjects = subjectDao.findByNativeQuery("select * from subject where name like \"Ma%\" or value = 6;");
+			System.out.println(subjects);
 			
 //			Subject s1 = new Subject();
 //			s1.setCodeIdef("OU190");
@@ -50,10 +59,24 @@ public class MainTest1 {
 //			subjectDao.save(s1);
 //			System.out.println("After: "+s1.toString());
 			
-			List<Subject> subjects = subjectDao.findAll();
-			System.out.println(subjects);
-			
-			DatabaseDao<SClass> classDao = daoFactory.buildDao(SClass.class);
+//			List<Subject> subjects = subjectDao.findAll();
+//			System.out.println(subjects);
+//			
+//			Criterion criterion = new Criterion("value", 8, ComparationOperator.Equality);
+//			Query query = new Query(criterion);
+//			List<Subject> subjectsByQuery = subjectDao.findBy(query);
+//			System.out.println(subjectsByQuery);
+//			
+//			Criterion c1 = new Criterion("value", 6, ComparationOperator.Equality);
+//			Criterion c2 = new Criterion("name", "Ma", ComparationOperator.Like);
+//			List<CriterionModel> criterions = new ArrayList<>();
+//			criterions.add(c1);
+//			criterions.add(c2);
+//			UnionCriteria unionCriteria = new UnionCriteria(criterions, QueryOperator.OR);
+//			Query query2 = new Query(unionCriteria);
+//			List<Subject> subjectsByOr = subjectDao.findBy(query2);
+//			System.out.println(subjectsByOr);			
+//			DatabaseDao<SClass> classDao = daoFactory.buildDao(SClass.class);
 			
 //			SClass c1 = new SClass();
 //			c1.setClassRoom("U5");
@@ -66,8 +89,8 @@ public class MainTest1 {
 //			classDao.save(c1);
 //			System.out.println("After: "+c1.toString());
 			
-			List<SClass> classes = classDao.findAll();
-			System.out.println(classes);
+//			List<SClass> classes = classDao.findAll();
+//			System.out.println(classes);
 			
 		} catch (Exception e) {
 			e.printStackTrace();

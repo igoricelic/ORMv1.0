@@ -73,6 +73,17 @@ public class Column {
 	}
 	
 	@Override
+	public boolean equals(Object obj) {
+		if(obj != null && obj instanceof Column) {
+			Column anotherColumn = (Column) obj;
+			if(anotherColumn.nameInDb.equals(nameInDb)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder(10);
 		return sb.append(" Column name in model: ").append(this.nameInModel).append(" Name in db: ")

@@ -10,7 +10,7 @@ import com.orm.v_1.ORM.logic.OrmEntity;
 
 @Table(name="class")
 public class SClass implements OrmEntity {
-	
+
 	@Id(auto_increment=true)
 	private Integer id;
 	
@@ -24,10 +24,10 @@ public class SClass implements OrmEntity {
 	
 	@Column(name="date_time")
 	private Date dateTime;
-	
+
 	@Column(name="class_room")
 	private String classRoom;
-	
+
 	private String description;
 
 	public Integer getId() {

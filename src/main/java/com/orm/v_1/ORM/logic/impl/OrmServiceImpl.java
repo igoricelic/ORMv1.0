@@ -18,6 +18,7 @@ import com.orm.v_1.ORM.logic.ModelBuilderService;
 import com.orm.v_1.ORM.logic.ORM;
 import com.orm.v_1.ORM.model.Column;
 import com.orm.v_1.ORM.model.Database;
+import com.orm.v_1.ORM.model.Id;
 import com.orm.v_1.ORM.model.Table;
 
 public class OrmServiceImpl implements ORM {
@@ -50,7 +51,7 @@ public class OrmServiceImpl implements ORM {
 
 		this.database = modelBuilder.buildModel(this.databaseName, entities);
 		if (createTables) createTables();
-		//controlEntitiesInDb(this.connection, database);
+		else controlEntitiesInDb(this.connection, database);
 
 		return new DatabaseDaoFactoryImpl(connection, database);
 	}
@@ -75,28 +76,45 @@ public class OrmServiceImpl implements ORM {
 		String FIELD = "Field", TYPE = "Type", NULL = "Null", KEY = "Key", DEFAULT = "Default", EXTRA = "Extra";
 		Table table = null;
 		Column column = null;
+		List<Column> columns = new ArrayList<>();
 		while (rs.next()) tablesInDb.add(rs.getString(1));
 		for(String tableName: tableNames) {
 			if(!tablesInDb.contains(tableName)) throw new TableNotFoundException("Table " + tableName + " not found in database!");
 			table = database.getTableByDbName(tableName);
+			columns.clear();
 			rs = st.executeQuery(columnsQuery + tableName);
 			while(rs.next()) {
 				column = table.getColumnByDbName(rs.getString(FIELD));
 				if(column == null) throw new ColumnNotFoundException("Column " + rs.getString(FIELD) + " not found in table " + tableName);
-				if(rs.getString(TYPE).split("(")[0].equalsIgnoreCase(column.getType().toString())) {
+				columns.add(column);
+				String[] typeArr = rs.getString(TYPE).split("\\(");
+				if(!column.getType().toString().equalsIgnoreCase(typeArr[0])) {
 					throw new NotCompatibleTypesException("Not compatible types: " + column.getType() + " and " + rs.getString(TYPE) + " in column " + column.getNameInDb() + ", table " + tableName);
 				}
-				
-				System.out.println("=============================");
-				System.out.println(rs.getString(TYPE));
-				System.out.println(rs.getString(NULL));
-				System.out.println(rs.getString(KEY));
-				System.out.println(rs.getString(DEFAULT));
-				System.out.println(rs.getString(EXTRA));
-				System.out.println("=============================");
+				String nullValue = column.isNotNull() ? "NO" : "YES";
+				if(!nullValue.equals(rs.getString(NULL))) {
+					throw new NotCompatibleTypesException("Not compatible not null vaules in database and model for column: " + column.getNameInModel() + " and table: " + tableName);
+				}
+				String PRI = "PRI";
+				if(column.isPrimaryKey() && !PRI.equals(rs.getString(KEY))) {
+					throw new NotCompatibleTypesException("Not compatible primary keys in database and model!!! Column " + column.getNameInModel() + " is not primary key in db.");
+				}
+				if(column.isPrimaryKey()) {
+					Id id = (Id) column;
+					String AI = "auto_increment";
+					if(id.isAutoIncrement() && !AI.equals(rs.getString(EXTRA))) {
+						throw new NotCompatibleTypesException("Column " + column.getNameInModel() + " is not autoincement column in database.");
+					}
+				}
+			}
+			if(columns.size() < table.getColumns().size()) {
+				for(Column columnInTable: table.getColumns()) {
+					if(!columns.contains(columnInTable)) {
+						throw new ColumnNotFoundException("Column " + columnInTable.getNameInModel() + " not found in table " + tableName);
+					}
+				}
 			}
 		}
-
 		return true;
 	}
 

@@ -31,6 +31,11 @@ public class Id extends Column {
 	}
 	
 	@Override
+	public boolean equals(Object obj) {
+		return super.equals(obj);
+	}
+	
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder(10);
 		return sb.append(" ID ").append(super.getNameInDb()).append(" Auto increment: ")

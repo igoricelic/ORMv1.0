@@ -1,6 +1,8 @@
 package com.orm.v_1.ORM.logic.impl;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -35,6 +37,7 @@ public class DatabaseDaoImplementation<T> implements DatabaseDao<T> {
 	
 	public DatabaseDaoImplementation(T t, Connection connection, Database database) {
 		this.t = t;
+		
 		this.database = database;
 		this.connection = connection;
 		this.dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -186,7 +189,6 @@ public class DatabaseDaoImplementation<T> implements DatabaseDao<T> {
 		logger.info(">>> " + queryRes);
 		Statement st = connection.createStatement();
 		ResultSet rs = st.executeQuery(queryRes);
-		System.out.println("proslo");
 		Table table = database.getTableForEntityClass(entity);
 		List<T> results = new LinkedList<>();
 		Object object = null, value = null;
@@ -209,7 +211,8 @@ public class DatabaseDaoImplementation<T> implements DatabaseDao<T> {
 	}
 
 	@Override
-	public List<T> executeNativeQuery(String query) throws SQLException, InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException {
+	public List<T> findByNativeQuery(String query) throws SQLException, InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException {
+		logger.info("NATIVE QUERY: " + query);
 		Statement st = this.connection.createStatement();
 		ResultSet rs = st.executeQuery(query);
 		return extractResultSet(rs);
@@ -234,6 +237,14 @@ public class DatabaseDaoImplementation<T> implements DatabaseDao<T> {
 			results.add((T) object);
 		}
 		return results;
+	}
+
+	@Override
+	public Boolean executeNativeQuery(String query) throws SQLException {
+		logger.info("NATIVE QUERY: " + query);
+		Statement st = this.connection.createStatement();
+		st.executeUpdate(query);
+		return true;
 	}
 
 }

@@ -22,7 +22,9 @@ public interface DatabaseDao<T> {
 	
 	public Boolean updateMore (List<T> objects) throws SQLException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException, ParseException;
 	
-	public List<T> executeNativeQuery (String query) throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException, SQLException;
+	public List<T> findByNativeQuery (String query) throws InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException, IllegalArgumentException, SQLException;
+	
+	public Boolean executeNativeQuery (String query) throws SQLException;
 	
 	public List<T> findBy (Query query) throws SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, ParseException;
 	
