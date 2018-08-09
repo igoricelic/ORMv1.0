@@ -124,7 +124,8 @@ public class OrmServiceImpl implements ORM {
 
 	private Connection getConnection() throws ClassNotFoundException, SQLException {
 		// Setup the connection with the DB
-		Class.forName("com.mysql.cj.jdbc.Driver");
+		//Class.forName("com.mysql.cj.jdbc.Driver");
+		Class.forName("com.mysql.jdbc.Driver");
 		String connectionPath = "jdbc:mysql://%s:%d/%s?user=%s&password=%s";
 		Connection connection = DriverManager
 				.getConnection(String.format(connectionPath, host, port, databaseName, username, password));
