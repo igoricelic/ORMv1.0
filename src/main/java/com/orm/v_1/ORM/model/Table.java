@@ -10,10 +10,13 @@ public class Table {
 	
 	private List<Column> columns;
 	
-	public Table(String name, Id id, List<Column> columns) {
+	private List<ForeignKey> foreignKeys;
+	
+	public Table(String name, Id id, List<Column> columns, List<ForeignKey> foreignKeys) {
 		this.name = name;
 		this.id = id;
 		this.columns = columns;
+		this.foreignKeys = foreignKeys;
 	}
 	
 	public String getName() {
@@ -22,6 +25,10 @@ public class Table {
 	
 	public List<Column> getColumns() {
 		return columns;
+	}
+	
+	public List<ForeignKey> getForeignKeys() {
+		return foreignKeys;
 	}
 	
 	public Id getId() {
@@ -59,6 +66,15 @@ public class Table {
 	public Column getColumnByDbName (String nameInDb) {
 		for(Column column: columns) {
 			if(column.getNameInDb().equals(nameInDb)) {
+				return column;
+			}
+		}
+		return null;
+	}
+	
+	public Column getColumnByModelName (String nameInModel) {
+		for(Column column: columns) {
+			if(column.getNameInModel().equals(nameInModel)) {
 				return column;
 			}
 		}

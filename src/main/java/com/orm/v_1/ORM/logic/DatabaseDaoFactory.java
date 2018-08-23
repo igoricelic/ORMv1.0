@@ -6,4 +6,6 @@ public interface DatabaseDaoFactory {
 	
 	public <T> DatabaseDao<T> buildDao (Class<T> clazz) throws InstantiationException, IllegalAccessException, NotSuportTypeException;
 
+	public <T> T generateProxy (Class<?> interfaceClass, Class<T> entityClass);
+	
 }

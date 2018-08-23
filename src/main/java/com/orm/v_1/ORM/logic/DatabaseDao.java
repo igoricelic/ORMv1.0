@@ -1,5 +1,7 @@
 package com.orm.v_1.ORM.logic;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.List;
