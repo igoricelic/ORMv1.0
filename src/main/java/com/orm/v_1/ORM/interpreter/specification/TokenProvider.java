@@ -33,15 +33,21 @@ public class TokenProvider {
 			
 			new Token("NE", TokenType.RESERVED_KEYWORDS, " != ?"),
 			
-			new Token("LIKE", TokenType.RESERVED_KEYWORDS, " LIKE"),
-			
 			new Token("BEFORE", TokenType.RESERVED_KEYWORDS, " < ?"),
 			 
 			new Token("AFTER", TokenType.RESERVED_KEYWORDS, " > ?"),
 			
+			new Token("BETWEEN", TokenType.RESERVED_KEYWORDS, " BETWEEN (?, ?)"),
+			
 			new Token("ORDER", TokenType.RESERVED_KEYWORDS, " ORDER BY"),
 			
-			new Token("LIMIT", TokenType.RESERVED_KEYWORDS, "")
+			new Token("LIMIT", TokenType.RESERVED_KEYWORDS, " LIMIT ?"),
+			
+			new Token("STARTWITH", TokenType.RESERVED_KEYWORDS, " LIKE ?"),
+			
+			new Token("ENDWITH", TokenType.RESERVED_KEYWORDS, " LIKE ?"),
+			
+			new Token("CONTAINS", TokenType.RESERVED_KEYWORDS, " LIKE ?")
 			
 			);
 	

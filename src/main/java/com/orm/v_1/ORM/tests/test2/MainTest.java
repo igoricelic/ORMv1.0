@@ -22,17 +22,37 @@ public class MainTest {
 			List<Administrator> lAdministrators = administratorDao.findAll();
 			System.out.println(lAdministrators);
 			
-			List<Administrator> lAdministratorsPera = administratorDao.findByNameEq("Pera");
-			System.out.println(lAdministratorsPera);
+			//List<Administrator> lAdministratorsPera = administratorDao.findByNameEq("Pera");
+			//System.out.println(lAdministratorsPera);
 			
-			List<Administrator> res1 = administratorDao.findByNameEqAndSurnameEq("Zika", "Zikic");
-			System.out.println(res1);
+			//List<Administrator> res1 = administratorDao.findByNameEqAndSurnameEq("Zika", "Zikic");
+			//System.out.println(res1);
 			
-			List<Administrator> res2 = administratorDao.findByFavoriteNumberLt(9);
-			System.out.println(res2);
+			//List<Administrator> res2 = administratorDao.findByFavoriteNumberLt(9);
+			//System.out.println(res2);
 			
-			Administrator admin1 = administratorDao.findByEmailEqAndPasswordEq("pera.peric@gmail.com", "pera");
-			System.out.println(admin1);
+			//Administrator admin1 = administratorDao.findByEmailEqAndPasswordEq("pera.peric@gmail.com", "pera");
+			//System.out.println(admin1);
+			
+			//List<Administrator> res3 = administratorDao.findByDateOfRegistrationBefore(new Date());
+			//System.out.println(res3);
+			
+			//List<Administrator> res4 = administratorDao.findByDateOfRegistrationAfter(new Date());
+			//System.out.println(res4);
+			
+			List<Administrator> res5 = administratorDao.findByNameStartWith("Pe%");
+			System.out.println(res5);
+			
+			List<Administrator> res6 = administratorDao.findByNameEndWith("%a");
+			System.out.println(res6);
+			
+			List<Administrator> res7 = administratorDao.findByNameContains("%er%");
+			System.out.println(res7);
+			
+//			Calendar calendar = Calendar.getInstance();
+//			calendar.add(Calendar.HOUR, -12);
+//			List<Administrator> res8 = administratorDao.findByDateOfRegistrationBetween(calendar.getTime(), new Date());
+//			System.out.println(res8);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
