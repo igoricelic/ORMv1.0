@@ -1,5 +1,6 @@
 package com.orm.v_1.ORM.dynamic;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,26 +31,8 @@ public class MainTest {
 			
 			//DatabaseDao<Proffesor> proffesorDao = daoFactory.buildDao(Proffesor.class);
 
-			ProffesorDao proffesorDao = (ProffesorDao) daoFactory.generateProxy(ProffesorDao.class, Proffesor.class);
+			//ProffesorDao proffesorDao = (ProffesorDao) daoFactory.generateProxy(ProffesorDao.class, Proffesor.class);
 			
-			List<Proffesor> proffesors1 = proffesorDao.selectByName("Pera");
-			
-			System.out.println(proffesors1.size());
-			
-			List<Proffesor> proffesors2 = proffesorDao.selectBySurname("Peric");
-			
-			System.out.println(proffesors2.size());
-			
-			// Castovanje iz liste u objekat problem
-			Proffesor proffesor3 = proffesorDao.selectByLicence("12345");
-			
-			System.out.println(proffesor3.toString());
-			
-//			proffesorDao.findBySurname("Peric");
-//			
-//			proffesorDao.save(null);
-//			
-//			proffesorDao.findAll();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

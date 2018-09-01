@@ -5,10 +5,10 @@ import java.util.Date;
 import java.util.List;
 
 import com.orm.v_1.ORM.Constants;
-import com.orm.v_1.ORM.logic.DatabaseDao;
 import com.orm.v_1.ORM.logic.DatabaseDaoFactory;
 import com.orm.v_1.ORM.logic.ORM;
 import com.orm.v_1.ORM.logic.impl.OrmServiceImpl;
+import com.orm.v_1.ORM.logic.repositories.DaoRepository;
 import com.orm.v_1.ORM.query.Query;
 import com.orm.v_1.ORM.query.criterion.Criterion;
 import com.orm.v_1.ORM.query.criterion.CriterionModel;
@@ -30,7 +30,7 @@ public class MainTest1 {
 			entities.add(Proffesor.class);
 			DatabaseDaoFactory daoFactory = orm.generateMapping(Constants.DB, entities, true);
 
-			DatabaseDao<Proffesor> proffesorDao = daoFactory.buildDao(Proffesor.class);
+			DaoRepository<Proffesor> proffesorDao = daoFactory.buildDao(Proffesor.class);
 			
 			Proffesor p1 = new Proffesor();
 			p1.setName("Giga");
@@ -45,7 +45,7 @@ public class MainTest1 {
 			List<Proffesor> proffesors = proffesorDao.findAll();
 			System.out.println(proffesors);
 
-			DatabaseDao<Subject> subjectDao = daoFactory.buildDao(Subject.class);
+			DaoRepository<Subject> subjectDao = daoFactory.buildDao(Subject.class);
 
 			// List<Subject> subjects = subjectDao.findByNativeQuery("select * from subject
 			// where name like \"Ma%\" or value = 6;");
@@ -88,7 +88,7 @@ public class MainTest1 {
 			Query query2 = new Query(unionCriteria);
 			List<Subject> subjectsByOr = subjectDao.findBy(query2);
 			System.out.println(subjectsByOr);
-			DatabaseDao<SClass> classDao = daoFactory.buildDao(SClass.class);
+			DaoRepository<SClass> classDao = daoFactory.buildDao(SClass.class);
 
 			SClass c11 = new SClass();
 			c11.setClassRoom("U5");

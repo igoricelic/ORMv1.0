@@ -74,7 +74,7 @@ public class Table {
 	
 	public Column getColumnByModelName (String nameInModel) {
 		for(Column column: columns) {
-			if(column.getNameInModel().equals(nameInModel)) {
+			if(column.getNameInModel().equalsIgnoreCase(nameInModel)) {
 				return column;
 			}
 		}

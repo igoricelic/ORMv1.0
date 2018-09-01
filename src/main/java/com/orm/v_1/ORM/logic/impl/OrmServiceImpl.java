@@ -51,7 +51,7 @@ public class OrmServiceImpl implements ORM {
 
 		this.database = modelBuilder.buildModel(this.databaseName, entities);
 		if (createTables) createTables();
-		else controlEntitiesInDb(this.connection, database);
+		//else controlEntitiesInDb(this.connection, database);
 
 		return new DatabaseDaoFactoryImpl(connection, database);
 	}
