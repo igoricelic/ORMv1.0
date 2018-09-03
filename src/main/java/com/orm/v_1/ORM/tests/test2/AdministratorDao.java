@@ -3,6 +3,7 @@ package com.orm.v_1.ORM.tests.test2;
 import java.util.Date;
 import java.util.List;
 
+import com.orm.v_1.ORM.annotations.NativeQuery;
 import com.orm.v_1.ORM.logic.repositories.DaoRepository;
 import com.orm.v_1.ORM.tests.test1.entities.Proffesor;
 import com.orm.v_1.ORM.tests.test1.entities.SClass;
@@ -30,6 +31,9 @@ public interface AdministratorDao extends DaoRepository<Administrator> {
 	public List<Administrator> findByDateOfRegistrationBetween (Date time1, Date time2);
 	
 	public List<Administrator> findByFavoriteNumberLteOrFavoriteNumberGte (Integer lb, Integer up);
+	
+	@NativeQuery(value = "select * from admin where name = ?")
+	public List<Administrator> fetchByName (String name);
 	
 	public Proffesor findByEmailEq (String email);
 	

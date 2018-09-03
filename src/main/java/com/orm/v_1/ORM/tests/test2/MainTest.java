@@ -69,7 +69,8 @@ public class MainTest {
 			Administrator admin1 = administratorDao.findByEmailEqAndPasswordEq("pera.peric@gmail.com", "pera");
 			System.out.println(admin1);
 			
-			administratorDao.findByEmailEq("");
+			List<Administrator> fetchResults = administratorDao.fetchByName("Pera");
+			System.out.println(fetchResults);
 			
 			List<Administrator> res1 = administratorDao.findByNameEqAndSurnameEq("Zika", "Zikic");
 			System.out.println(res1);

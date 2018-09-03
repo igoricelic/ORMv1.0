@@ -1,11 +1,13 @@
 package com.orm.v_1.ORM.dynamic;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 
+import com.orm.v_1.ORM.annotations.NativeQuery;
 import com.orm.v_1.ORM.exceptions.NotCompatibleTypesException;
 import com.orm.v_1.ORM.interpreter.Interpreter;
 import com.orm.v_1.ORM.interpreter.impl.InterpreterImpl;
@@ -52,6 +54,14 @@ public class DaoProxy<T> implements InvocationHandler {
 		        } else {
 		        	if(!this.entityClass.equals(type)) throw new NotCompatibleTypesException("Not compatible types: "+this.entityClass.toGenericString()+" and "+type);
 		        }
+		        
+		        for(Annotation annotation: method.getDeclaredAnnotations()) {
+		        	if(annotation instanceof NativeQuery) {
+		        		if(!isList) return dao.executePreparedQueryOne(((NativeQuery) annotation).value(), args);
+		        		else return dao.executeByPreparedQueryMore(((NativeQuery) annotation).value(), args);
+		        	}
+		        }
+		        
 		        String query = this.interpreter.buildStatement(method);
 		        if(!isList) return this.dao.executePreparedQueryOne(query, args);
 				return this.dao.executeByPreparedQueryMore(query, args);
