@@ -1,14 +1,13 @@
 package com.orm.v_1.ORM.tests.test2;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import com.orm.v_1.ORM.Constants;
 import com.orm.v_1.ORM.logic.DatabaseDaoFactory;
 import com.orm.v_1.ORM.logic.ORM;
 import com.orm.v_1.ORM.logic.impl.OrmServiceImpl;
-import com.orm.v_1.ORM.tests.test1.entities.Proffesor;
-import com.orm.v_1.ORM.tests.test1.entities.SClass;
 
 
 public class MainTest {
@@ -60,32 +59,32 @@ public class MainTest {
 //			a4.setPassword("dugalic");
 //
 //			administratorDao.save(a4);
+//			
+//			List<Administrator> lAdministrators = administratorDao.findAll();
+//			System.out.println(lAdministrators);
 			
-			List<Administrator> lAdministrators = administratorDao.findAll();
-			System.out.println(lAdministrators);
+			List<Administrator> lAdministratorsPera = administratorDao.findByNameEq("Pera");
+			System.out.println(lAdministratorsPera);
 			
-			//List<Administrator> lAdministratorsPera = administratorDao.findByNameEq("Pera");
-			//System.out.println(lAdministratorsPera);
+			Administrator admin1 = administratorDao.findByEmailEqAndPasswordEq("pera.peric@gmail.com", "pera");
+			System.out.println(admin1);
 			
-			//List<Administrator> res1 = administratorDao.findByNameEqAndSurnameEq("Zika", "Zikic");
-			//System.out.println(res1);
+			administratorDao.findByEmailEq("");
 			
-			//List<Administrator> res2 = administratorDao.findByFavoriteNumberLt(9);
-			//System.out.println(res2);
+			List<Administrator> res1 = administratorDao.findByNameEqAndSurnameEq("Zika", "Zikic");
+			System.out.println(res1);
 			
-			//Administrator admin1 = administratorDao.findByEmailEqAndPasswordEq("pera.peric@gmail.com", "pera");
-			//System.out.println(admin1);
+			List<Administrator> res2 = administratorDao.findByFavoriteNumberLt(9);
+			System.out.println(res2);
 			
-			//List<Administrator> res3 = administratorDao.findByDateOfRegistrationBefore(new Date());
-			//System.out.println(res3);
+			List<Administrator> res3 = administratorDao.findByDateOfRegistrationBefore(new Date());
+			System.out.println(res3);
 			
-			//List<Administrator> res4 = administratorDao.findByDateOfRegistrationAfter(new Date());
-			//System.out.println(res4);
+			List<Administrator> res4 = administratorDao.findByDateOfRegistrationAfter(new Date());
+			System.out.println(res4);
 			
 			List<Administrator> res5 = administratorDao.findByFavoriteNumberLteOrFavoriteNumberGte(5, 10);
 			System.out.println(res5);
-			
-			administratorDao.findByEmailEq("");
 			
 			administratorDao.findBySurnameEq("");
 			

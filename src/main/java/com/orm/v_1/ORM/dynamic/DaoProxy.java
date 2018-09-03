@@ -38,15 +38,19 @@ public class DaoProxy<T> implements InvocationHandler {
 				return dao.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(dao, args);
 			} catch (NoSuchMethodException e) {
 				boolean isList = false;
-				Type type = method.getGenericReturnType();
+				
+				Type type =  method.getGenericReturnType();
 		        if (type instanceof ParameterizedType) {
 		        	isList = true;
-		            ParameterizedType pt = (ParameterizedType) type;
-		            for (Type t : pt.getActualTypeArguments()) {
-		            	if(!this.entityClass.equals(t)) throw new NotCompatibleTypesException("Not compatoble types: "+this.entityClass.toGenericString()+" and "+t.getClass().toGenericString());
-		            }
+		        	if (type instanceof ParameterizedType) {
+	                    ParameterizedType paramType = (ParameterizedType) type;
+	                    Type[] argTypes = paramType.getActualTypeArguments();
+	                    if (argTypes.length > 0) {
+	                       if(!this.entityClass.equals(argTypes[0])) throw new NotCompatibleTypesException("Not compatible types: "+this.entityClass.toGenericString()+" and "+argTypes[0]);
+	                    }
+	                }
 		        } else {
-		        	if(!this.entityClass.equals(type)) throw new NotCompatibleTypesException("Not compatoble types: "+this.entityClass.toGenericString()+" and "+type.getClass().toGenericString());
+		        	if(!this.entityClass.equals(type)) throw new NotCompatibleTypesException("Not compatible types: "+this.entityClass.toGenericString()+" and "+type);
 		        }
 		        String query = this.interpreter.buildStatement(method);
 		        if(!isList) return this.dao.executePreparedQueryOne(query, args);
