@@ -39,7 +39,7 @@ public class LexicalAnalyzerImpl implements LexicalAnalyzer {
 			currToken = null;
 			tokenBuilder.setLength(0);
 		} while(index < input.length());
-		// take FROM token from TokenProvider and put it on second place
+		// take FROM token (from -table_name-) from TokenProvider and put it on second place
 		tokens.add(FROM_TOKEN_POSITION, tokenProvider.getFromToken());
 		return tokens;
 	}

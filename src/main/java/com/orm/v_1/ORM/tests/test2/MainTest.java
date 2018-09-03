@@ -7,6 +7,8 @@ import com.orm.v_1.ORM.Constants;
 import com.orm.v_1.ORM.logic.DatabaseDaoFactory;
 import com.orm.v_1.ORM.logic.ORM;
 import com.orm.v_1.ORM.logic.impl.OrmServiceImpl;
+import com.orm.v_1.ORM.tests.test1.entities.Proffesor;
+import com.orm.v_1.ORM.tests.test1.entities.SClass;
 
 
 public class MainTest {
@@ -18,6 +20,46 @@ public class MainTest {
 			DatabaseDaoFactory daoFactory = orm.generateMapping(Constants.DB, entities, false);
 			
 			AdministratorDao administratorDao = (AdministratorDao) daoFactory.generateProxy(AdministratorDao.class, Administrator.class);
+			
+//			Administrator a1 = new Administrator();
+//			a1.setName("Pera");
+//			a1.setSurname("Peric");
+//			a1.setEmail("pera.peric@gmail.com");
+//			a1.setDateOfRegistration(new Date());
+//			a1.setFavoriteNumber(10);
+//			a1.setPassword("pera");
+//	
+//			administratorDao.save(a1);
+//	
+//			Administrator a2 = new Administrator();
+//			a2.setName("Mika");
+//			a2.setSurname("Mikic");
+//			a2.setEmail("mika.mikic@gmail.com");
+//			a2.setDateOfRegistration(new Date());
+//			a2.setFavoriteNumber(13);
+//			a2.setPassword("mika");
+//	
+//			administratorDao.save(a2);
+//	
+//			Administrator a3 = new Administrator();
+//			a3.setName("Zika");
+//			a3.setSurname("Zikic");
+//			a3.setEmail("zika.zikic@gmail.com");
+//			a3.setDateOfRegistration(new Date());
+//			a3.setFavoriteNumber(7);
+//			a3.setPassword("zika");
+//	
+//			administratorDao.save(a3);
+//	
+//			Administrator a4 = new Administrator();
+//			a4.setName("Pera");
+//			a4.setSurname("Dugalic");
+//			a4.setEmail("pera.dugalic@gmail.com");
+//			a4.setDateOfRegistration(new Date());
+//			a4.setFavoriteNumber(5);
+//			a4.setPassword("dugalic");
+//
+//			administratorDao.save(a4);
 			
 			List<Administrator> lAdministrators = administratorDao.findAll();
 			System.out.println(lAdministrators);
@@ -40,14 +82,21 @@ public class MainTest {
 			//List<Administrator> res4 = administratorDao.findByDateOfRegistrationAfter(new Date());
 			//System.out.println(res4);
 			
-			List<Administrator> res5 = administratorDao.findByNameStartWith("Pe%");
+			List<Administrator> res5 = administratorDao.findByFavoriteNumberLteOrFavoriteNumberGte(5, 10);
 			System.out.println(res5);
 			
-			List<Administrator> res6 = administratorDao.findByNameEndWith("%a");
-			System.out.println(res6);
+			administratorDao.findByEmailEq("");
 			
-			List<Administrator> res7 = administratorDao.findByNameContains("%er%");
-			System.out.println(res7);
+			administratorDao.findBySurnameEq("");
+			
+//			List<Administrator> res5 = administratorDao.findByNameStartWith("Pe%");
+//			System.out.println(res5);
+//			
+//			List<Administrator> res6 = administratorDao.findByNameEndWith("%a");
+//			System.out.println(res6);
+//			
+//			List<Administrator> res7 = administratorDao.findByNameContains("%er%");
+//			System.out.println(res7);
 			
 //			Calendar calendar = Calendar.getInstance();
 //			calendar.add(Calendar.HOUR, -12);
@@ -57,45 +106,5 @@ public class MainTest {
 			e.printStackTrace();
 		}
 	}
-	
-//	Administrator a1 = new Administrator();
-//	a1.setName("Pera");
-//	a1.setSurname("Peric");
-//	a1.setEmail("pera.peric@gmail.com");
-//	a1.setDateOfRegistration(new Date());
-//	a1.setFavoriteNumber(10);
-//	a1.setPassword("pera");
-//	
-//	administratorDao.save(a1);
-//	
-//	Administrator a2 = new Administrator();
-//	a2.setName("Mika");
-//	a2.setSurname("Mikic");
-//	a2.setEmail("mika.mikic@gmail.com");
-//	a2.setDateOfRegistration(new Date());
-//	a2.setFavoriteNumber(13);
-//	a2.setPassword("mika");
-//	
-//	administratorDao.save(a2);
-//	
-//	Administrator a3 = new Administrator();
-//	a3.setName("Zika");
-//	a3.setSurname("Zikic");
-//	a3.setEmail("zika.zikic@gmail.com");
-//	a3.setDateOfRegistration(new Date());
-//	a3.setFavoriteNumber(7);
-//	a3.setPassword("zika");
-//	
-//	administratorDao.save(a3);
-//	
-//	Administrator a4 = new Administrator();
-//	a4.setName("Pera");
-//	a4.setSurname("Dugalic");
-//	a4.setEmail("pera.dugalic@gmail.com");
-//	a4.setDateOfRegistration(new Date());
-//	a4.setFavoriteNumber(5);
-//	a4.setPassword("dugalic");
-//	
-//	administratorDao.save(a4);
 
 }

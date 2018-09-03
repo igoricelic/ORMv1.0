@@ -29,7 +29,7 @@ public class DatabaseDaoFactoryImpl implements DatabaseDaoFactory {
 	@Override
 	public <T> T generateProxy(Class<?> interfaceClass, Class<T> entityClass) {
 		Table table = database.getTableForEntityClass(entityClass);
-		return (T) DaoProxy.newInstance(new Class[]{ interfaceClass }, table, new DatabaseDaoImplementation<>(entityClass, connection, database));
+		return (T) DaoProxy.newInstance(new Class[]{ interfaceClass }, table, entityClass, new DatabaseDaoImplementation<>(entityClass, connection, database));
 	}
 
 }
