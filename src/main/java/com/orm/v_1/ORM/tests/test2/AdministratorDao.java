@@ -12,6 +12,8 @@ public interface AdministratorDao extends DaoRepository<Administrator> {
 	
 	public List<Administrator> findByNameEq (String name);
 	
+	public List<Administrator> findByNameEqLimitFrom (String name, Integer startPosition, Integer size);
+	
 	public List<Administrator> findByNameEqAndSurnameEq (String name, String surname);
 	
 	public Administrator findByEmailEqAndPasswordEq (String email, String password);

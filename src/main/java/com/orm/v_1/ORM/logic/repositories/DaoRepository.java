@@ -18,6 +18,8 @@ public interface DaoRepository<T> {
 
 	public Boolean updateOne (T object);
 	
+	public Boolean update (T object);
+	
 	public Boolean updateMore (List<T> objects);
 	
 	public List<T> findByNativeQuery (String query);

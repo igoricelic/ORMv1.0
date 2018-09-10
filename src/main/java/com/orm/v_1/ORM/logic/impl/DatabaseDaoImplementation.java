@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -317,6 +318,56 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	@Override
+	public Boolean update(T object) {
+		try {
+			Table table = database.getTableForEntityClass(object.getClass());
+			Field field = object.getClass().getDeclaredField(table.getId().getNameInModel());
+			field.setAccessible(true);
+			Object idOfOriginalObject = field.get(object);
+			T original = findOne(idOfOriginalObject);
+			List<Column> modifiedColumns = new ArrayList<>();
+			Field fieldFromOriginal = null;
+			Field fieldFromObject = null;
+			for(Column column: table.getColumns()) {
+				fieldFromOriginal = original.getClass().getDeclaredField(column.getNameInModel());
+				fieldFromOriginal.setAccessible(true);
+				fieldFromObject = object.getClass().getDeclaredField(column.getNameInModel());
+				fieldFromObject.setAccessible(true);
+				if(fieldFromOriginal.get(original) == null && fieldFromObject.get(object) != null) {
+					modifiedColumns.add(column);
+					continue;
+				}
+				if(fieldFromOriginal.get(original) == null || fieldFromObject.get(object) == null) continue;
+				if(!fieldFromOriginal.get(original).equals(fieldFromObject.get(object))) {
+					modifiedColumns.add(column);
+				}
+			}
+			
+			String set = "";
+			for(Column column: modifiedColumns) {
+				set = set + column.getNameInDb() + " = ? ";
+			}
+			
+			String updateQuery = "UPDATE " + table.getName() + " SET " + set + " WHERE id = ?";
+			logger.info(updateQuery);
+			PreparedStatement preparedStatement = this.connection.prepareStatement(updateQuery);
+			int idx = 1;
+			for(Column column: modifiedColumns) {
+				fieldFromObject = object.getClass().getDeclaredField(column.getNameInModel());
+				fieldFromObject.setAccessible(true);
+				preparedStatement.setObject(idx, fieldFromObject.get(object));
+				idx++;
+			}
+			preparedStatement.setObject(idx, idOfOriginalObject);
+			preparedStatement.execute();
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 

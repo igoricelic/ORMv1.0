@@ -16,52 +16,58 @@ public class MainTest {
 		try {
 			ORM orm = new OrmServiceImpl(Constants.HOST, Constants.PORT, Constants.USERNAME, Constants.PASSWORD);
 			List<Class<?>> entities = Arrays.asList(Administrator.class);
-			DatabaseDaoFactory daoFactory = orm.generateMapping(Constants.DB, entities, false);
+			DatabaseDaoFactory daoFactory = orm.generateMapping(Constants.DB, entities, true);
 			
 			AdministratorDao administratorDao = (AdministratorDao) daoFactory.generateProxy(AdministratorDao.class, Administrator.class);
 			
-//			Administrator a1 = new Administrator();
-//			a1.setName("Pera");
-//			a1.setSurname("Peric");
-//			a1.setEmail("pera.peric@gmail.com");
-//			a1.setDateOfRegistration(new Date());
-//			a1.setFavoriteNumber(10);
-//			a1.setPassword("pera");
-//	
-//			administratorDao.save(a1);
-//	
-//			Administrator a2 = new Administrator();
-//			a2.setName("Mika");
-//			a2.setSurname("Mikic");
-//			a2.setEmail("mika.mikic@gmail.com");
-//			a2.setDateOfRegistration(new Date());
-//			a2.setFavoriteNumber(13);
-//			a2.setPassword("mika");
-//	
-//			administratorDao.save(a2);
-//	
-//			Administrator a3 = new Administrator();
-//			a3.setName("Zika");
-//			a3.setSurname("Zikic");
-//			a3.setEmail("zika.zikic@gmail.com");
-//			a3.setDateOfRegistration(new Date());
-//			a3.setFavoriteNumber(7);
-//			a3.setPassword("zika");
-//	
-//			administratorDao.save(a3);
-//	
-//			Administrator a4 = new Administrator();
-//			a4.setName("Pera");
-//			a4.setSurname("Dugalic");
-//			a4.setEmail("pera.dugalic@gmail.com");
-//			a4.setDateOfRegistration(new Date());
-//			a4.setFavoriteNumber(5);
-//			a4.setPassword("dugalic");
-//
-//			administratorDao.save(a4);
-//			
-//			List<Administrator> lAdministrators = administratorDao.findAll();
-//			System.out.println(lAdministrators);
+			Administrator a1 = new Administrator();
+			a1.setName("Pera");
+			a1.setSurname("Peric");
+			a1.setEmail("pera.peric@gmail.com");
+			a1.setDateOfRegistration(new Date());
+			a1.setFavoriteNumber(10);
+			a1.setPassword("pera");
+	
+			administratorDao.save(a1);
+	
+			Administrator a2 = new Administrator();
+			a2.setName("Mika");
+			a2.setSurname("Mikic");
+			a2.setEmail("mika.mikic@gmail.com");
+			a2.setDateOfRegistration(new Date());
+			a2.setFavoriteNumber(13);
+			a2.setPassword("mika");
+	
+			administratorDao.save(a2);
+	
+			Administrator a3 = new Administrator();
+			a3.setName("Zika");
+			a3.setSurname("Zikic");
+			a3.setEmail("zika.zikic@gmail.com");
+			a3.setDateOfRegistration(new Date());
+			a3.setFavoriteNumber(7);
+			a3.setPassword("zika");
+	
+			administratorDao.save(a3);
+	
+			Administrator a4 = new Administrator();
+			a4.setName("Pera");
+			a4.setSurname("Dugalic");
+			a4.setEmail("pera.dugalic@gmail.com");
+			a4.setDateOfRegistration(new Date());
+			a4.setFavoriteNumber(5);
+			a4.setPassword("dugalic");
+
+			administratorDao.save(a4);
+			
+			List<Administrator> adminsPage = administratorDao.findByNameEqLimitFrom("Pera", 0, 5);
+			System.out.println(adminsPage);
+			
+			List<Administrator> adminsPage2 = administratorDao.findByNameEqLimitFrom("Pera", 1, 5);
+			System.out.println(adminsPage2);
+			
+			List<Administrator> lAdministrators = administratorDao.findAll();
+			System.out.println(lAdministrators);
 			
 			List<Administrator> lAdministratorsPera = administratorDao.findByNameEq("Pera");
 			System.out.println(lAdministratorsPera);

@@ -43,6 +43,8 @@ public class TokenProvider {
 			
 			new Token("LIMIT", TokenType.RESERVED_KEYWORDS, " LIMIT ?"),
 			
+			new Token("LIMITFROM", TokenType.RESERVED_KEYWORDS, " LIMIT ?, ?"),
+			
 			new Token("STARTWITH", TokenType.RESERVED_KEYWORDS, " LIKE ?"),
 			
 			new Token("ENDWITH", TokenType.RESERVED_KEYWORDS, " LIKE ?"),
