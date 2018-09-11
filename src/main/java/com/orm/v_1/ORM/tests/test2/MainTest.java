@@ -16,9 +16,15 @@ public class MainTest {
 		try {
 			ORM orm = new OrmServiceImpl(Constants.HOST, Constants.PORT, Constants.USERNAME, Constants.PASSWORD);
 			List<Class<?>> entities = Arrays.asList(Administrator.class);
-			DatabaseDaoFactory daoFactory = orm.generateMapping(Constants.DB, entities, true);
+			DatabaseDaoFactory daoFactory = orm.generateMapping(Constants.DB, entities, false, true);
 			
 			AdministratorDao administratorDao = (AdministratorDao) daoFactory.generateProxy(AdministratorDao.class, Administrator.class);
+			
+			List<Administrator> lA = administratorDao.findAll();
+			
+			for(Administrator administrator: administratorDao.findAll()) {
+				administratorDao.delete(administrator.getId());
+			}
 			
 			Administrator a1 = new Administrator();
 			a1.setName("Pera");

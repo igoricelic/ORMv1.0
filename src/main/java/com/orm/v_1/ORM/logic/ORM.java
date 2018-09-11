@@ -10,6 +10,6 @@ import com.orm.v_1.ORM.exceptions.TableNotFoundException;
 
 public interface ORM {
 	
-	public DatabaseDaoFactory generateMapping (String databaseName, List<Class<?>> entities, boolean createDatabase) throws NoSuchFieldException, SecurityException, SQLException, ClassNotFoundException, TableNotFoundException, NotSuportTypeException, ColumnNotFoundException, NotCompatibleTypesException;
+	public DatabaseDaoFactory generateMapping (String databaseName, List<Class<?>> entities, boolean createDatabase, boolean showSqlQueries) throws NoSuchFieldException, SecurityException, SQLException, ClassNotFoundException, TableNotFoundException, NotSuportTypeException, ColumnNotFoundException, NotCompatibleTypesException;
 	
 }

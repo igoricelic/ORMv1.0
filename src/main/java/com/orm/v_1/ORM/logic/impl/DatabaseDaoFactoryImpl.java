@@ -15,21 +15,24 @@ public class DatabaseDaoFactoryImpl implements DatabaseDaoFactory {
 	
 	private Database database;
 	
-	public DatabaseDaoFactoryImpl(Connection connection, Database database) {
+	private Boolean logSqlQueries;
+	
+	public DatabaseDaoFactoryImpl(Connection connection, Database database, Boolean logSqlQueries) {
 		this.connection = connection;
 		this.database = database;
+		this.logSqlQueries = logSqlQueries;
 	}
 
 	@Override
 	public <T> DaoRepository<T> buildDao(Class<T> clazz) throws InstantiationException, IllegalAccessException, NotSuportTypeException {
 		if(database.getTableForEntityClass(clazz) == null) throw new NotSuportTypeException("Not suport DAO type!");
-		return new DatabaseDaoImplementation<T>(clazz, connection, database);
+		return new DatabaseDaoImplementation<T>(clazz, connection, database, logSqlQueries);
 	}
 
 	@Override
 	public <T> T generateProxy(Class<?> interfaceClass, Class<T> entityClass) {
 		Table table = database.getTableForEntityClass(entityClass);
-		return (T) DaoProxy.newInstance(new Class[]{ interfaceClass }, table, entityClass, new DatabaseDaoImplementation<>(entityClass, connection, database));
+		return (T) DaoProxy.newInstance(new Class[]{ interfaceClass }, table, entityClass, new DatabaseDaoImplementation<>(entityClass, connection, database, logSqlQueries));
 	}
 
 }

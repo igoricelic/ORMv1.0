@@ -27,7 +27,7 @@ public class MainTest {
 			entities.add(Subject.class);
 			entities.add(SClass.class);
 			entities.add(Proffesor.class);
-			DatabaseDaoFactory daoFactory = orm.generateMapping(Constants.DB, entities, false);
+			DatabaseDaoFactory daoFactory = orm.generateMapping(Constants.DB, entities, false, true);
 			
 			//DatabaseDao<Proffesor> proffesorDao = daoFactory.buildDao(Proffesor.class);
 

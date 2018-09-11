@@ -6,10 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -23,33 +20,35 @@ import com.orm.v_1.ORM.model.Table;
 import com.orm.v_1.ORM.query.Query;
 
 public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
-	
-	private static final Logger logger = Logger.getLogger( DaoRepository.class.getName() );
-	
+
+	private static final Logger logger = Logger.getLogger(DaoRepository.class.getName());
+
 	private static final String GENERATED_KEY_COLUMN_NAME = "GENERATED_KEY";
-	
+
 	private Class<T> entity;
-	
+
 	private Database database;
-	private Connection connection;
-	private DateFormat dateFormatter;
 	
-	public DatabaseDaoImplementation(Class<T> clazz, Connection connection, Database database) {
+	private Connection connection;
+	
+	private Boolean logSqlQueries;
+
+	public DatabaseDaoImplementation(Class<T> clazz, Connection connection, Database database, Boolean logSqlQueries) {
 		entity = clazz;
 		this.database = database;
 		this.connection = connection;
-		this.dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		this.logSqlQueries = logSqlQueries;
 	}
 
 	@Override
 	public List<T> findAll() {
 		try {
 			Table table = this.database.getTableForEntityClass(entity);
-			String query = String.format("SELECT * FROM `%s`;", table.getName());
-			Statement st = this.connection.createStatement();
-			logger.info(">>> " + query);
-			ResultSet rs = st.executeQuery(query);
-			return extractResultSet(rs);
+			String query = String.format("SELECT * FROM %s;", table.getName());
+			if(logSqlQueries) logger.info(query);
+			PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+			ResultSet rs = preparedStatement.executeQuery();
+			return extractListFromResultSet(rs);
 		} catch (SecurityException | IllegalArgumentException | SQLException e1) {
 			e1.printStackTrace();
 			return null;
@@ -58,28 +57,15 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 
 	@Override
 	public T findOne(Object id) {
-		T result;
 		try {
-			result = entity.newInstance();
 			Table table = database.getTableForEntityClass(entity);
-			String query = String.format("SELECT * FROM `%s` WHERE `%s`=\"%s\";", table.getName(), table.getId().getNameInDb(), id.toString());
-			Statement st = connection.createStatement();
-			logger.info(">>> " + query);
-			ResultSet rs = st.executeQuery(query);
-			Field field = null;
-			String columnName = "";
-			Object value = null;
-			while(rs.next()) {
-				for(Column column: table.getColumns()) {
-					columnName = column.getNameInDb();
-					value = rs.getObject(columnName);
-					field = entity.getDeclaredField(column.getNameInModel());
-					field.setAccessible(true);
-					field.set(result, value);
-				}
-			}
-			return result;
-		} catch (InstantiationException | IllegalAccessException | SQLException | NoSuchFieldException | SecurityException e) {
+			String query = String.format("SELECT * FROM %s WHERE %s = ?", table.getName(), table.getId().getNameInDb());
+			if(logSqlQueries) logger.info(query);
+			PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+			preparedStatement.setObject(1, id);
+			ResultSet rs = preparedStatement.executeQuery();
+			return extractObjectFromResultSet(rs);
+		} catch (SQLException | SecurityException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -89,11 +75,11 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	public Boolean delete(Object id) {
 		try {
 			Table table = database.getTableForEntityClass(entity);
-			String query = String.format("DELETE FROM `%s` WHERE `%s`=\"%s\";", table.getName(), table.getId().getNameInDb(), id.toString());
-			Statement st;
-			st = connection.createStatement();
-			logger.info(">>> " + query);
-			st.execute(query);
+			String query = String.format("DELETE FROM %s WHERE %s = ?", table.getName(), table.getId().getNameInDb());
+			PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+			if(logSqlQueries) logger.info(query);
+			preparedStatement.setObject(1, id);
+			preparedStatement.execute();
 			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -105,48 +91,50 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	public T save(T object) {
 		try {
 			Table table = this.database.getTableForEntityClass(object.getClass());
-			String query = table.getInsertQuery();
-			
-			StringBuilder values = new StringBuilder(50);
-			Field field = null;
-			Object value = null;
-			String primaryKeyModelName = null;
-			boolean genPriKey = false;
-			for(Column column: table.getColumns()) {
-				field = object.getClass().getDeclaredField(column.getNameInModel());
-				field.setAccessible(true);
-				value = field.get(object);
-				if(column.isPrimaryKey() && ((Id)column).isAutoIncrement() && (value == null)) {
-					values.append("null, ");
-					primaryKeyModelName = column.getNameInModel();
-					genPriKey = true;
-					continue;
+			String query = "INSERT INTO %s (%s) VALUES (%s)";
+			Id id = table.getId();
+			StringBuilder sbColumns = new StringBuilder(50);
+			StringBuilder sbValues = new StringBuilder(50);
+
+			int idx = 0;
+			for (Column column : table.getColumns()) {
+				if (idx == 0) {
+					sbColumns.append(column.getNameInDb());
+					if(id.isAutoIncrement()) sbValues.append("null");
+					else sbValues.append("?");
+				} else {
+					sbColumns.append(", ").append(column.getNameInDb());
+					sbValues.append(", ?");
 				}
-				if(field.getType().equals(Date.class)) {
-					values.append("\"").append(dateFormatter.format(value)).append("\", ");
-				}
-				else if(field.getType().equals(String.class)) {
-					values.append("\"").append(value).append("\", ");
-				}
-				else {
-					values.append(field.get(object)).append(", ");
-				}
+				idx++;
 			}
-			query = String.format(query, values.toString().substring(0, values.toString().length()-2));
-			logger.info(">>> " + query);
-			PreparedStatement ps = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-			ps.executeUpdate();
-			ResultSet rs = ps.getGeneratedKeys();
+			query = String.format(query, table.getName(), sbColumns.toString(), sbValues.toString());
+			if(logSqlQueries) logger.info(query);
+			PreparedStatement preparedStatement = this.connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+
+			idx = 1;
+			for (Column column : table.getColumns()) {
+				if(column.isPrimaryKey() && id.isAutoIncrement()) continue;
+				Field field = object.getClass().getDeclaredField(column.getNameInModel());
+				field.setAccessible(true);
+				Object value = field.get(object);
+				preparedStatement.setObject(idx, value);
+				idx++;
+			}
+
+			preparedStatement.executeUpdate();
+
+			ResultSet rs = preparedStatement.getGeneratedKeys();
 			
-			if(genPriKey && rs != null && rs.next()) {
+			if (id.isAutoIncrement() && rs != null && rs.next()) {
 				Integer genValue = rs.getInt(GENERATED_KEY_COLUMN_NAME);
-				Field priKeyField = object.getClass().getDeclaredField(primaryKeyModelName);
+				Field priKeyField = object.getClass().getDeclaredField(id.getNameInModel());
 				priKeyField.setAccessible(true);
 				priKeyField.set(object, genValue);
 			}
 
 			return object;
-		} catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException | SQLException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -154,50 +142,15 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 
 	@Override
 	public Boolean saveMore(List<T> objects) {
-		for(T object: objects) {
+		for (T object : objects) {
 			save(object);
 		}
 		return true;
 	}
 
 	@Override
-	public Boolean updateOne(T object) {
-		try {
-			Table table = database.getTableForEntityClass(object.getClass());
-			Field field = object.getClass().getDeclaredField(table.getId().getNameInModel());
-			field.setAccessible(true);
-			Object idOfObject = field.get(object);
-			Object oldObject = findOne(idOfObject);
-			Field fieldOldObj = null, fieldObj = null;
-			Object valueOldObj = null, valueObj = null;
-			StringBuilder sb = new StringBuilder(50);
-			for(Column column: table.getColumns()) {
-				fieldOldObj = oldObject.getClass().getDeclaredField(column.getNameInModel());
-				fieldOldObj.setAccessible(true);
-				valueOldObj = fieldOldObj.get(oldObject);
-				fieldObj = object.getClass().getDeclaredField(column.getNameInModel());
-				fieldObj.setAccessible(true);
-				valueObj = fieldObj.get(object);
-				if(!valueOldObj.equals(valueObj)) {
-					sb.append("`").append(column.getNameInDb()).append("` = ")
-					.append("\"").append(valueObj.toString()).append("\", ");
-				}
-			}
-			String changeStr = sb.toString().substring(0, sb.toString().length()-2);
-			String query = String.format("UPDATE `%s` SET %s WHERE `%s` = \"%s\";", table.getName(), changeStr, table.getId().getNameInDb(), idOfObject.toString());
-			logger.info(">>> " + query);
-			Statement st = connection.createStatement();
-			st.execute(query);
-			return true;
-		} catch (SQLException | NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	@Override
 	public Boolean updateMore(List<T> objects) {
-		for(T object: objects) {
+		for (T object : objects) {
 			updateOne(object);
 		}
 		return true;
@@ -208,29 +161,11 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 		try {
 			query.setDb(database, entity);
 			String queryRes = query.getQuery();
-			logger.info(">>> " + queryRes);
-			Statement st = connection.createStatement();
-			ResultSet rs = st.executeQuery(queryRes);
-			Table table = database.getTableForEntityClass(entity);
-			List<T> results = new LinkedList<>();
-			Object object = null, value = null;
-			Field field = null;
-			String columnName = null;
-			
-			while(rs.next()) {
-				object = entity.newInstance();
-				for(Column column: table.getColumns()) {
-					columnName = column.getNameInDb();
-					value = rs.getObject(columnName);
-					field = entity.getDeclaredField(column.getNameInModel());
-					field.setAccessible(true);
-					field.set(object, value);
-				}
-				results.add((T) object);
-			}
-
-			return results;
-		} catch (SQLException | InstantiationException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			if(logSqlQueries) logger.info(queryRes);
+			PreparedStatement preparedStatement = connection.prepareStatement(queryRes);
+			ResultSet rs = preparedStatement.executeQuery();
+			return extractListFromResultSet(rs);
+		} catch (SQLException | SecurityException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -239,36 +174,63 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	@Override
 	public List<T> findByNativeQuery(String query) {
 		try {
-			logger.info("NATIVE QUERY: " + query);
-			Statement st = this.connection.createStatement();
-			ResultSet rs = st.executeQuery(query);
-			return extractResultSet(rs);
+			if(logSqlQueries) logger.info(query);
+			PreparedStatement preparedStatement = connection.prepareStatement(query);
+			ResultSet rs = preparedStatement.executeQuery();
+			return extractListFromResultSet(rs);
 		} catch (SQLException | SecurityException | IllegalArgumentException e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
-	
-	private List<T> extractResultSet (ResultSet rs) {
+
+	private List<T> extractListFromResultSet(ResultSet rs) {
 		try {
 			Table table = this.database.getTableForEntityClass(entity);
 			List<T> results = new LinkedList<>();
-			Object object = null, value = null;
+			T object = null;
+			Object value = null;
 			Field field = null;
 			String columnName = null;
-			while(rs.next()) {
+			while (rs.next()) {
 				object = entity.newInstance();
-				for(Column column: table.getColumns()) {
+				for (Column column : table.getColumns()) {
 					columnName = column.getNameInDb();
 					value = rs.getObject(columnName);
 					field = entity.getDeclaredField(column.getNameInModel());
 					field.setAccessible(true);
 					field.set(object, value);
 				}
-				results.add((T) object);
+				results.add(object);
 			}
 			return results;
-		} catch (SQLException | IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException | InstantiationException e) {
+		} catch (SQLException | IllegalArgumentException | IllegalAccessException | NoSuchFieldException
+				| SecurityException | InstantiationException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	private T extractObjectFromResultSet(ResultSet rs) {
+		try {
+			Table table = this.database.getTableForEntityClass(entity);
+			T object = null;
+			Object value = null;
+			Field field = null;
+			String columnName = null;
+			while (rs.next()) {
+				object = entity.newInstance();
+				for (Column column : table.getColumns()) {
+					columnName = column.getNameInDb();
+					value = rs.getObject(columnName);
+					field = entity.getDeclaredField(column.getNameInModel());
+					field.setAccessible(true);
+					field.set(object, value);
+				}
+			}
+			return object;
+		} catch (SQLException | IllegalArgumentException | IllegalAccessException | NoSuchFieldException
+				| SecurityException | InstantiationException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -277,9 +239,9 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	@Override
 	public Boolean executeNativeQuery(String query) {
 		try {
-			logger.info("NATIVE QUERY: " + query);
-			Statement st = this.connection.createStatement();
-			st.executeUpdate(query);
+			if(logSqlQueries) logger.info(query);
+			PreparedStatement preparedStatement = connection.prepareStatement(query);
+			preparedStatement.execute();
 			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -290,13 +252,13 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	@Override
 	public T executePreparedQueryOne(String preparedQuery, Object[] args) {
 		try {
-			logger.info(">>> "+preparedQuery);
+			if(logSqlQueries) logger.info(preparedQuery);
 			PreparedStatement preparedStatement = this.connection.prepareStatement(preparedQuery);
-			for(int i=0; i<args.length; i++) {
-				preparedStatement.setObject(i+1, args[i]);
+			for (int i = 0; i < args.length; i++) {
+				preparedStatement.setObject(i + 1, args[i]);
 			}
 			ResultSet rs = preparedStatement.executeQuery();
-			List<T> results = extractResultSet(rs);
+			List<T> results = extractListFromResultSet(rs);
 			// TODO: Proveriti da li je count veci od 1 i ispucati exception ukoliko jeste
 			return results.get(0);
 		} catch (SQLException e) {
@@ -308,13 +270,13 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	@Override
 	public List<T> executeByPreparedQueryMore(String preparedQuery, Object[] args) {
 		try {
-			logger.info(">>> "+preparedQuery);
+			if(logSqlQueries) logger.info(preparedQuery);
 			PreparedStatement preparedStatement = this.connection.prepareStatement(preparedQuery);
-			for(int i=0; i<args.length; i++) {
-				preparedStatement.setObject(i+1, args[i]);
+			for (int i = 0; i < args.length; i++) {
+				preparedStatement.setObject(i + 1, args[i]);
 			}
 			ResultSet rs = preparedStatement.executeQuery();
-			return extractResultSet(rs);
+			return extractListFromResultSet(rs);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
@@ -322,7 +284,7 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	}
 
 	@Override
-	public Boolean update(T object) {
+	public Boolean updateOne(T object) {
 		try {
 			Table table = database.getTableForEntityClass(object.getClass());
 			Field field = object.getClass().getDeclaredField(table.getId().getNameInModel());
@@ -332,31 +294,32 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 			List<Column> modifiedColumns = new ArrayList<>();
 			Field fieldFromOriginal = null;
 			Field fieldFromObject = null;
-			for(Column column: table.getColumns()) {
+			for (Column column : table.getColumns()) {
 				fieldFromOriginal = original.getClass().getDeclaredField(column.getNameInModel());
 				fieldFromOriginal.setAccessible(true);
 				fieldFromObject = object.getClass().getDeclaredField(column.getNameInModel());
 				fieldFromObject.setAccessible(true);
-				if(fieldFromOriginal.get(original) == null && fieldFromObject.get(object) != null) {
+				if (fieldFromOriginal.get(original) == null && fieldFromObject.get(object) != null) {
 					modifiedColumns.add(column);
 					continue;
 				}
-				if(fieldFromOriginal.get(original) == null || fieldFromObject.get(object) == null) continue;
-				if(!fieldFromOriginal.get(original).equals(fieldFromObject.get(object))) {
+				if (fieldFromOriginal.get(original) == null || fieldFromObject.get(object) == null)
+					continue;
+				if (!fieldFromOriginal.get(original).equals(fieldFromObject.get(object))) {
 					modifiedColumns.add(column);
 				}
 			}
-			
+
 			String set = "";
-			for(Column column: modifiedColumns) {
+			for (Column column : modifiedColumns) {
 				set = set + column.getNameInDb() + " = ? ";
 			}
-			
+
 			String updateQuery = "UPDATE " + table.getName() + " SET " + set + " WHERE id = ?";
-			logger.info(updateQuery);
+			if(logSqlQueries) logger.info(updateQuery);
 			PreparedStatement preparedStatement = this.connection.prepareStatement(updateQuery);
 			int idx = 1;
-			for(Column column: modifiedColumns) {
+			for (Column column : modifiedColumns) {
 				fieldFromObject = object.getClass().getDeclaredField(column.getNameInModel());
 				fieldFromObject.setAccessible(true);
 				preparedStatement.setObject(idx, fieldFromObject.get(object));

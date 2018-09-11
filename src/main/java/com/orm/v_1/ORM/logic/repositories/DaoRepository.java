@@ -15,10 +15,8 @@ public interface DaoRepository<T> {
 	public T save (T object);
 	
 	public Boolean saveMore (List<T> objects);
-
-	public Boolean updateOne (T object);
 	
-	public Boolean update (T object);
+	public Boolean updateOne (T object);
 	
 	public Boolean updateMore (List<T> objects);
 	

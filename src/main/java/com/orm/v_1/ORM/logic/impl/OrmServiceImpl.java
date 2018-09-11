@@ -43,7 +43,7 @@ public class OrmServiceImpl implements ORM {
 	}
 
 	@Override
-	public DatabaseDaoFactory generateMapping(String databaseName, List<Class<?>> entities, boolean createTables)
+	public DatabaseDaoFactory generateMapping(String databaseName, List<Class<?>> entities, boolean createTables, boolean showSqlQueries)
 			throws NoSuchFieldException, SecurityException, SQLException, ClassNotFoundException, TableNotFoundException, NotSuportTypeException, ColumnNotFoundException, NotCompatibleTypesException {
 		this.databaseName = databaseName;
 		this.connection = getConnection();
@@ -53,7 +53,7 @@ public class OrmServiceImpl implements ORM {
 		if (createTables) createTables();
 		//else controlEntitiesInDb(this.connection, database);
 
-		return new DatabaseDaoFactoryImpl(connection, database);
+		return new DatabaseDaoFactoryImpl(connection, database, showSqlQueries);
 	}
 
 	private Boolean createTables() throws SQLException {
