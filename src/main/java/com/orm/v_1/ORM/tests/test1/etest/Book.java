@@ -1,4 +1,4 @@
-package com.orm.v_1.ORM.tests.test1.entitiesRel;
+package com.orm.v_1.ORM.tests.test1.etest;
 
 import com.orm.v_1.ORM.annotations.Id;
 import com.orm.v_1.ORM.annotations.Not_Null;

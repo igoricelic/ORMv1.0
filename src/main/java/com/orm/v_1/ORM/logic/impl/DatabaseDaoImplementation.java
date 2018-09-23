@@ -98,10 +98,10 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 
 			int idx = 0;
 			for (Column column : table.getColumns()) {
+				if(column.isPrimaryKey() && table.getId().isAutoIncrement()) continue;
 				if (idx == 0) {
 					sbColumns.append(column.getNameInDb());
-					if(id.isAutoIncrement()) sbValues.append("null");
-					else sbValues.append("?");
+					sbValues.append("?");
 				} else {
 					sbColumns.append(", ").append(column.getNameInDb());
 					sbValues.append(", ?");
@@ -312,8 +312,9 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 
 			String set = "";
 			for (Column column : modifiedColumns) {
-				set = set + column.getNameInDb() + " = ? ";
+				set = set + column.getNameInDb() + " = ?, ";
 			}
+			set = set.substring(0, set.length()-2);
 
 			String updateQuery = "UPDATE " + table.getName() + " SET " + set + " WHERE id = ?";
 			if(logSqlQueries) logger.info(updateQuery);

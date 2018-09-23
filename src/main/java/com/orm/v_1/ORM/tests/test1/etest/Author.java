@@ -1,4 +1,4 @@
-package com.orm.v_1.ORM.tests.test1.entitiesRel;
+package com.orm.v_1.ORM.tests.test1.etest;
 
 import java.util.Date;
 import java.util.List;

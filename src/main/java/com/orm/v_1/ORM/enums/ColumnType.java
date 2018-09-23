@@ -7,7 +7,7 @@ public enum ColumnType {
 	AUTO,
 	VARCHAR,
 	INT,
-	DECIMAL,
+	DOUBLE,
 	DATETIME,
 	BLOB;
 	
@@ -17,7 +17,7 @@ public enum ColumnType {
 				return String.class;
 			case INT:
 				return Integer.class;
-			case DECIMAL:
+			case DOUBLE:
 				return Double.class;
 			case DATETIME:
 				return Date.class;
@@ -36,7 +36,7 @@ public enum ColumnType {
 			case "Integer":
 				return ColumnType.INT;
 			case "Double":
-				return ColumnType.DECIMAL;
+				return ColumnType.DOUBLE;
 			case "Date":
 				return ColumnType.DATETIME;
 			default:
@@ -51,7 +51,7 @@ public enum ColumnType {
 				return 45;
 			case INT:
 				return 10;
-			case DECIMAL:
+			case DOUBLE:
 				return 10;
 			case DATETIME:
 				return -1;
