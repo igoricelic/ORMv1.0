@@ -97,7 +97,7 @@ public class ModelBuilderServiceImpl implements ModelBuilderService {
 				isUnique = true;
 			}
 		}
-		
+
 		if(type == ColumnType.AUTO) {
 			Class<?> fieldClass = field.getType();
 			ColumnType colType = ColumnType.getTypeByClass(fieldClass);

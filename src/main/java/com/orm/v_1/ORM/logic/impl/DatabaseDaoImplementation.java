@@ -11,6 +11,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.orm.v_1.ORM.datastructure.Page;
+import com.orm.v_1.ORM.datastructure.PageImplementation;
+import com.orm.v_1.ORM.datastructure.PageRequest;
 import com.orm.v_1.ORM.logic.repositories.DaoRepository;
 import com.orm.v_1.ORM.logic.repositories.ProxyRepository;
 import com.orm.v_1.ORM.model.Column;
@@ -46,7 +49,7 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 			Table table = this.database.getTableForEntityClass(entity);
 			String query = String.format("SELECT * FROM %s;", table.getName());
 			if(logSqlQueries) logger.info(query);
-			PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+			PreparedStatement preparedStatement = getConnection().prepareStatement(query);
 			ResultSet rs = preparedStatement.executeQuery();
 			return extractListFromResultSet(rs);
 		} catch (SecurityException | IllegalArgumentException | SQLException e1) {
@@ -61,7 +64,7 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 			Table table = database.getTableForEntityClass(entity);
 			String query = String.format("SELECT * FROM %s WHERE %s = ?", table.getName(), table.getId().getNameInDb());
 			if(logSqlQueries) logger.info(query);
-			PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+			PreparedStatement preparedStatement = getConnection().prepareStatement(query);
 			preparedStatement.setObject(1, id);
 			ResultSet rs = preparedStatement.executeQuery();
 			return extractObjectFromResultSet(rs);
@@ -76,7 +79,7 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 		try {
 			Table table = database.getTableForEntityClass(entity);
 			String query = String.format("DELETE FROM %s WHERE %s = ?", table.getName(), table.getId().getNameInDb());
-			PreparedStatement preparedStatement = this.connection.prepareStatement(query);
+			PreparedStatement preparedStatement = getConnection().prepareStatement(query);
 			if(logSqlQueries) logger.info(query);
 			preparedStatement.setObject(1, id);
 			preparedStatement.execute();
@@ -110,7 +113,7 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 			}
 			query = String.format(query, table.getName(), sbColumns.toString(), sbValues.toString());
 			if(logSqlQueries) logger.info(query);
-			PreparedStatement preparedStatement = this.connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement preparedStatement = getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 
 			idx = 1;
 			for (Column column : table.getColumns()) {
@@ -162,7 +165,7 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 			query.setDb(database, entity);
 			String queryRes = query.getQuery();
 			if(logSqlQueries) logger.info(queryRes);
-			PreparedStatement preparedStatement = connection.prepareStatement(queryRes);
+			PreparedStatement preparedStatement = getConnection().prepareStatement(queryRes);
 			ResultSet rs = preparedStatement.executeQuery();
 			return extractListFromResultSet(rs);
 		} catch (SQLException | SecurityException e) {
@@ -175,7 +178,7 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	public List<T> findByNativeQuery(String query) {
 		try {
 			if(logSqlQueries) logger.info(query);
-			PreparedStatement preparedStatement = connection.prepareStatement(query);
+			PreparedStatement preparedStatement = getConnection().prepareStatement(query);
 			ResultSet rs = preparedStatement.executeQuery();
 			return extractListFromResultSet(rs);
 		} catch (SQLException | SecurityException | IllegalArgumentException e) {
@@ -240,7 +243,7 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	public Boolean executeNativeQuery(String query) {
 		try {
 			if(logSqlQueries) logger.info(query);
-			PreparedStatement preparedStatement = connection.prepareStatement(query);
+			PreparedStatement preparedStatement = getConnection().prepareStatement(query);
 			preparedStatement.execute();
 			return true;
 		} catch (SQLException e) {
@@ -253,7 +256,7 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	public T executePreparedQueryOne(String preparedQuery, Object[] args) {
 		try {
 			if(logSqlQueries) logger.info(preparedQuery);
-			PreparedStatement preparedStatement = this.connection.prepareStatement(preparedQuery);
+			PreparedStatement preparedStatement = getConnection().prepareStatement(preparedQuery);
 			for (int i = 0; i < args.length; i++) {
 				preparedStatement.setObject(i + 1, args[i]);
 			}
@@ -271,7 +274,7 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	public List<T> executeByPreparedQueryMore(String preparedQuery, Object[] args) {
 		try {
 			if(logSqlQueries) logger.info(preparedQuery);
-			PreparedStatement preparedStatement = this.connection.prepareStatement(preparedQuery);
+			PreparedStatement preparedStatement = getConnection().prepareStatement(preparedQuery);
 			for (int i = 0; i < args.length; i++) {
 				preparedStatement.setObject(i + 1, args[i]);
 			}
@@ -318,7 +321,7 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 
 			String updateQuery = "UPDATE " + table.getName() + " SET " + set + " WHERE id = ?";
 			if(logSqlQueries) logger.info(updateQuery);
-			PreparedStatement preparedStatement = this.connection.prepareStatement(updateQuery);
+			PreparedStatement preparedStatement = getConnection().prepareStatement(updateQuery);
 			int idx = 1;
 			for (Column column : modifiedColumns) {
 				fieldFromObject = object.getClass().getDeclaredField(column.getNameInModel());
@@ -333,6 +336,34 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 			e.printStackTrace();
 			return false;
 		}
+	}
+
+	@Override
+	public Page<T> findAll(PageRequest pageRequest) {
+		try {
+			Table table = this.database.getTableForEntityClass(entity);
+			String query = String.format("SELECT SQL_CALC_FOUND_ROWS * FROM %s LIMIT ? OFFSET ?;", table.getName());
+			if(logSqlQueries) logger.info(query);
+			PreparedStatement preparedStatementResults = getConnection().prepareStatement(query);
+			preparedStatementResults.setInt(1, pageRequest.getSize());
+			preparedStatementResults.setInt(2, pageRequest.getSize() * pageRequest.getPage());
+			ResultSet rs = preparedStatementResults.executeQuery();
+			List<T> pageContent = extractListFromResultSet(rs);
+			PreparedStatement preparedStatementTotalRows = getConnection().prepareStatement("SELECT FOUND_ROWS()");
+			ResultSet rsTotalRows = preparedStatementTotalRows.executeQuery();
+			Integer totalElements = 0;
+			if(rsTotalRows.next()) totalElements = rsTotalRows.getInt(1);
+			Double totalPages = totalElements / (double) pageRequest.getSize();
+			return new PageImplementation<>(pageContent, pageRequest.getPage(), pageRequest.getSize(), pageContent.size(), (int) Math.ceil(totalPages), totalElements, (pageRequest.getPage() == 0), (pageRequest.getPage().equals((int)Math.ceil(totalPages)-1)));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	private Connection getConnection() {
+		// TODO: Trenutak u kom ce se od pula konekcija zatraziti konekcija
+		return this.connection;
 	}
 
 }
