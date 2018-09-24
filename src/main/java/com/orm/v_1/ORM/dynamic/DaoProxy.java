@@ -11,14 +11,14 @@ import com.orm.v_1.ORM.annotations.NativeQuery;
 import com.orm.v_1.ORM.exceptions.NotCompatibleTypesException;
 import com.orm.v_1.ORM.interpreter.Interpreter;
 import com.orm.v_1.ORM.interpreter.impl.InterpreterImpl;
-import com.orm.v_1.ORM.logic.repositories.DaoRepository;
+import com.orm.v_1.ORM.logic.repositories.CrudRepository;
 import com.orm.v_1.ORM.logic.repositories.ProxyRepository;
 import com.orm.v_1.ORM.model.Table;
 
 public class DaoProxy<T> implements InvocationHandler {
 	
 	public static Object newInstance(Class<?>[] interfaces, Table table, Class<?> entityClass, ProxyRepository<?> dao) {
-		return Proxy.newProxyInstance(DaoRepository.class.getClassLoader(), interfaces, new DaoProxy(table, entityClass, dao));
+		return Proxy.newProxyInstance(CrudRepository.class.getClassLoader(), interfaces, new DaoProxy(table, entityClass, dao));
 	}
 	
 	private ProxyRepository<T> dao;

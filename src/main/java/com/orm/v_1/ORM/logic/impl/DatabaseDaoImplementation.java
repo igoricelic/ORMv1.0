@@ -9,22 +9,24 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import com.orm.v_1.ORM.datastructure.Page;
 import com.orm.v_1.ORM.datastructure.PageImplementation;
 import com.orm.v_1.ORM.datastructure.PageRequest;
-import com.orm.v_1.ORM.logic.repositories.DaoRepository;
+import com.orm.v_1.ORM.logic.repositories.CrudRepository;
 import com.orm.v_1.ORM.logic.repositories.ProxyRepository;
 import com.orm.v_1.ORM.model.Column;
 import com.orm.v_1.ORM.model.Database;
 import com.orm.v_1.ORM.model.Id;
 import com.orm.v_1.ORM.model.Table;
 import com.orm.v_1.ORM.query.Query;
+import com.orm.v_1.ORM.queryspecification.Specification;
 
 public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 
-	private static final Logger logger = Logger.getLogger(DaoRepository.class.getName());
+	private static final Logger logger = Logger.getLogger(CrudRepository.class.getName());
 
 	private static final String GENERATED_KEY_COLUMN_NAME = "GENERATED_KEY";
 
@@ -157,21 +159,6 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 			updateOne(object);
 		}
 		return true;
-	}
-
-	@Override
-	public List<T> findBy(Query query) {
-		try {
-			query.setDb(database, entity);
-			String queryRes = query.getQuery();
-			if(logSqlQueries) logger.info(queryRes);
-			PreparedStatement preparedStatement = getConnection().prepareStatement(queryRes);
-			ResultSet rs = preparedStatement.executeQuery();
-			return extractListFromResultSet(rs);
-		} catch (SQLException | SecurityException e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 
 	@Override
@@ -364,6 +351,39 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	private Connection getConnection() {
 		// TODO: Trenutak u kom ce se od pula konekcija zatraziti konekcija
 		return this.connection;
+	}
+
+	@Override
+	public Boolean deleteAll() {
+		try {
+			Table table = this.database.getTableForEntityClass(entity);
+			String query = String.format("DELETE * FROM %s WHERE %s > 0", table.getName(), table.getId().getNameInDb());
+			if(logSqlQueries) logger.info(query);
+			PreparedStatement preparedStatement = getConnection().prepareStatement(query);
+			preparedStatement.execute();
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	@Override
+	public Optional<T> findById(Object id) {
+		T object = findOne(id);
+		return Optional.ofNullable(object); 
+	}
+
+	@Override
+	public Optional<List<T>> findBySpecification(Specification specification) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Optional<Page<T>> findBySpecification(Specification specification, PageRequest pageRequest) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

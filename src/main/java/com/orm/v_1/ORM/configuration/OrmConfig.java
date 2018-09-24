@@ -12,7 +12,7 @@ import com.orm.v_1.ORM.exceptions.TableNotFoundException;
 import com.orm.v_1.ORM.logic.DatabaseDaoFactory;
 import com.orm.v_1.ORM.logic.ORM;
 import com.orm.v_1.ORM.logic.impl.OrmServiceImpl;
-import com.orm.v_1.ORM.logic.repositories.DaoRepository;
+import com.orm.v_1.ORM.logic.repositories.CrudRepository;
 
 public class OrmConfig {
 	
@@ -40,7 +40,7 @@ public class OrmConfig {
 		}
 	}
 	
-	public static <T> DaoRepository<T> buildRepository (Class<T> clazz) throws OrmConfigurationException {
+	public static <T> CrudRepository<T> buildRepository (Class<T> clazz) throws OrmConfigurationException {
 		try {
 			return daoFactory.buildDao(clazz);
 		} catch (Exception e) {

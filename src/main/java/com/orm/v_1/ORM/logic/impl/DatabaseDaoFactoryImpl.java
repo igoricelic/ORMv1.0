@@ -5,7 +5,7 @@ import java.sql.Connection;
 import com.orm.v_1.ORM.dynamic.DaoProxy;
 import com.orm.v_1.ORM.exceptions.NotSuportTypeException;
 import com.orm.v_1.ORM.logic.DatabaseDaoFactory;
-import com.orm.v_1.ORM.logic.repositories.DaoRepository;
+import com.orm.v_1.ORM.logic.repositories.CrudRepository;
 import com.orm.v_1.ORM.model.Database;
 import com.orm.v_1.ORM.model.Table;
 
@@ -24,7 +24,7 @@ public class DatabaseDaoFactoryImpl implements DatabaseDaoFactory {
 	}
 
 	@Override
-	public <T> DaoRepository<T> buildDao(Class<T> clazz) throws InstantiationException, IllegalAccessException, NotSuportTypeException {
+	public <T> CrudRepository<T> buildDao(Class<T> clazz) throws InstantiationException, IllegalAccessException, NotSuportTypeException {
 		if(database.getTableForEntityClass(clazz) == null) throw new NotSuportTypeException("Not suport DAO type!");
 		return new DatabaseDaoImplementation<T>(clazz, connection, database, logSqlQueries);
 	}

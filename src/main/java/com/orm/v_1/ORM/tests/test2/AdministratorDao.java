@@ -4,11 +4,11 @@ import java.util.Date;
 import java.util.List;
 
 import com.orm.v_1.ORM.annotations.NativeQuery;
-import com.orm.v_1.ORM.logic.repositories.DaoRepository;
+import com.orm.v_1.ORM.logic.repositories.CrudRepository;
 import com.orm.v_1.ORM.tests.test1.entities.Proffesor;
 import com.orm.v_1.ORM.tests.test1.entities.SClass;
 
-public interface AdministratorDao extends DaoRepository<Administrator> {
+public interface AdministratorDao extends CrudRepository<Administrator> {
 	
 	public List<Administrator> findByNameEq (String name);
 	

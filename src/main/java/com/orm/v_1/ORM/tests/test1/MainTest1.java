@@ -8,7 +8,8 @@ import com.orm.v_1.ORM.Constants;
 import com.orm.v_1.ORM.logic.DatabaseDaoFactory;
 import com.orm.v_1.ORM.logic.ORM;
 import com.orm.v_1.ORM.logic.impl.OrmServiceImpl;
-import com.orm.v_1.ORM.logic.repositories.DaoRepository;
+import com.orm.v_1.ORM.logic.repositories.CrudRepository;
+import com.orm.v_1.ORM.logic.repositories.Repository;
 import com.orm.v_1.ORM.query.Query;
 import com.orm.v_1.ORM.query.criterion.Criterion;
 import com.orm.v_1.ORM.query.criterion.CriterionModel;
@@ -30,7 +31,7 @@ public class MainTest1 {
 			entities.add(Proffesor.class);
 			DatabaseDaoFactory daoFactory = orm.generateMapping(Constants.DB, entities, true, true);
 
-			DaoRepository<Proffesor> proffesorDao = daoFactory.buildDao(Proffesor.class);
+			CrudRepository<Proffesor> proffesorDao = daoFactory.buildDao(Proffesor.class);
 			
 			Proffesor p1 = new Proffesor();
 			p1.setName("Giga");
@@ -45,7 +46,7 @@ public class MainTest1 {
 			List<Proffesor> proffesors = proffesorDao.findAll();
 			System.out.println(proffesors);
 
-			DaoRepository<Subject> subjectDao = daoFactory.buildDao(Subject.class);
+			CrudRepository<Subject> subjectDao = daoFactory.buildDao(Subject.class);
 
 			// List<Subject> subjects = subjectDao.findByNativeQuery("select * from subject
 			// where name like \"Ma%\" or value = 6;");
@@ -76,8 +77,8 @@ public class MainTest1 {
 
 			Criterion criterion = new Criterion("value", 8, ComparationOperator.Equality);
 			Query query = new Query(criterion);
-			List<Subject> subjectsByQuery = subjectDao.findBy(query);
-			System.out.println(subjectsByQuery);
+			//List<Subject> subjectsByQuery = subjectDao.findBy(query);
+			//System.out.println(subjectsByQuery);
 
 			Criterion c1 = new Criterion("value", 6, ComparationOperator.Equality);
 			Criterion c2 = new Criterion("name", "Ma", ComparationOperator.Like);
@@ -86,9 +87,9 @@ public class MainTest1 {
 			criterions.add(c2);
 			UnionCriteria unionCriteria = new UnionCriteria(criterions, QueryOperator.OR);
 			Query query2 = new Query(unionCriteria);
-			List<Subject> subjectsByOr = subjectDao.findBy(query2);
-			System.out.println(subjectsByOr);
-			DaoRepository<SClass> classDao = daoFactory.buildDao(SClass.class);
+			//List<Subject> subjectsByOr = subjectDao.findBy(query2);
+			//System.out.println(subjectsByOr);
+			CrudRepository<SClass> classDao = daoFactory.buildDao(SClass.class);
 
 			SClass c11 = new SClass();
 			c11.setClassRoom("U5");
