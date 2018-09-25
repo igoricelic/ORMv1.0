@@ -23,6 +23,9 @@ import com.orm.v_1.ORM.model.Id;
 import com.orm.v_1.ORM.model.Table;
 import com.orm.v_1.ORM.query.Query;
 import com.orm.v_1.ORM.queryspecification.Specification;
+import com.orm.v_1.ORM.queryspecification.generator.GeneratedResult;
+import com.orm.v_1.ORM.queryspecification.generator.SpecificationQueryGenerator;
+import com.orm.v_1.ORM.queryspecification.generator.SpecificationQueryGeneratorImpl;
 
 public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 
@@ -376,8 +379,23 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 
 	@Override
 	public Optional<List<T>> findBySpecification(Specification specification) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			Table table = this.database.getTableForEntityClass(entity);
+			SpecificationQueryGenerator specificationQueryGenerator = new SpecificationQueryGeneratorImpl();
+			GeneratedResult generatedResult = specificationQueryGenerator.generateQuery(specification, table);
+			if(logSqlQueries) logger.info(generatedResult.getQuery());
+			PreparedStatement preparedStatement = getConnection().prepareStatement(generatedResult.getQuery());
+			int idx = 1;
+			for(Object arg: generatedResult.getArgs()) {
+				preparedStatement.setObject(idx, arg);
+				idx++;
+			}
+			ResultSet rs = preparedStatement.executeQuery();
+			return Optional.ofNullable(extractListFromResultSet(rs));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override

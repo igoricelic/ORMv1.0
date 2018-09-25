@@ -1,0 +1,8 @@
+DB_HOST=localhost
+DB_PORT=3306
+DB_USERNAME=root
+DB_PASSWORD=root
+DB_NAME=ott_cms
+ENTITIES=com.orm.v_1.ORM.tests.sepcification.test1.entites
+CREATE_TABLES=false
+SHOW_SQL=true

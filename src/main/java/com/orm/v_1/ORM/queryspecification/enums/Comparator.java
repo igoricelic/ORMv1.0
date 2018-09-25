@@ -23,5 +23,35 @@ public enum Comparator {
 	Before,
 	
 	After;
+	
+	public String getStringRepresentation () {
+		switch (this) {
+			case Equality:
+				return " = ? ";
+			case LessThan:
+				return " < ? ";
+			case LessThanEquality:
+				return " <= ? ";
+			case GreaterThan:
+				return " > ? ";
+			case GreaterThanEquality:
+				return " >= ? ";
+			case NotEquals:
+				return " != ?";
+			case StartsWith:
+				return " LIKE ? ";
+			case EndsWith:
+				return " LIKE ? ";
+			case Contains:
+				return " LIKE ? ";
+			case Before:
+				return " < ? ";
+			case After:
+				return " > ? ";
+			default:
+				break;
+		}
+		return null;
+	}
 
 }

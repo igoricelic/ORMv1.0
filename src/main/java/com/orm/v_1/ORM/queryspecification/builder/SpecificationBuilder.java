@@ -1,6 +1,7 @@
 package com.orm.v_1.ORM.queryspecification.builder;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
@@ -56,9 +57,14 @@ public class SpecificationBuilder implements Observer {
 	}
 	
 	public Specification build () {
-		//Constructor<?> constructor = Specification.class.getConstructors();
-		System.out.println(toString());
-		return null;
+		try {
+			Constructor<Specification> constructor = (Constructor<Specification>) Specification.class.getDeclaredConstructors()[0];
+			constructor.setAccessible(true);
+			return constructor.newInstance(conditions, limit, orderByColumn, reverse);
+		} catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override

@@ -7,5 +7,19 @@ public enum Operator {
 	OR,
 	
 	NOT;
+	
+	public String getStringRepresentation () {
+		switch (this) {
+			case AND:
+				return "AND ";
+			case OR:
+				return "OR ";
+			case NOT:
+				return "NOT ";
+			default:
+				break;
+		}
+		return null;
+	}
 
 }

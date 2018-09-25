@@ -24,9 +24,9 @@ public class DatabaseDaoFactoryImpl implements DatabaseDaoFactory {
 	}
 
 	@Override
-	public <T> CrudRepository<T> buildDao(Class<T> clazz) throws InstantiationException, IllegalAccessException, NotSuportTypeException {
+	public <T> T buildDao(Class<T> clazz) throws InstantiationException, IllegalAccessException, NotSuportTypeException {
 		if(database.getTableForEntityClass(clazz) == null) throw new NotSuportTypeException("Not suport DAO type!");
-		return new DatabaseDaoImplementation<T>(clazz, connection, database, logSqlQueries);
+		return (T) new DatabaseDaoImplementation<T>(clazz, connection, database, logSqlQueries);
 	}
 
 	@Override

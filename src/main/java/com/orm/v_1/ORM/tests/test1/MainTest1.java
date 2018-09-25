@@ -31,7 +31,7 @@ public class MainTest1 {
 			entities.add(Proffesor.class);
 			DatabaseDaoFactory daoFactory = orm.generateMapping(Constants.DB, entities, true, true);
 
-			CrudRepository<Proffesor> proffesorDao = daoFactory.buildDao(Proffesor.class);
+			CrudRepository<Proffesor> proffesorDao = (CrudRepository<Proffesor>) daoFactory.buildDao(Proffesor.class);
 			
 			Proffesor p1 = new Proffesor();
 			p1.setName("Giga");
@@ -46,7 +46,7 @@ public class MainTest1 {
 			List<Proffesor> proffesors = proffesorDao.findAll();
 			System.out.println(proffesors);
 
-			CrudRepository<Subject> subjectDao = daoFactory.buildDao(Subject.class);
+			CrudRepository<Subject> subjectDao = (CrudRepository<Subject>) daoFactory.buildDao(Subject.class);
 
 			// List<Subject> subjects = subjectDao.findByNativeQuery("select * from subject
 			// where name like \"Ma%\" or value = 6;");
@@ -89,7 +89,7 @@ public class MainTest1 {
 			Query query2 = new Query(unionCriteria);
 			//List<Subject> subjectsByOr = subjectDao.findBy(query2);
 			//System.out.println(subjectsByOr);
-			CrudRepository<SClass> classDao = daoFactory.buildDao(SClass.class);
+			CrudRepository<SClass> classDao = (CrudRepository<SClass>) daoFactory.buildDao(SClass.class);
 
 			SClass c11 = new SClass();
 			c11.setClassRoom("U5");

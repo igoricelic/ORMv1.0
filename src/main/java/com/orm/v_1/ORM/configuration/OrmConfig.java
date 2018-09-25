@@ -40,7 +40,7 @@ public class OrmConfig {
 		}
 	}
 	
-	public static <T> CrudRepository<T> buildRepository (Class<T> clazz) throws OrmConfigurationException {
+	public static <T> T buildRepository (Class<T> clazz) throws OrmConfigurationException {
 		try {
 			return daoFactory.buildDao(clazz);
 		} catch (Exception e) {
