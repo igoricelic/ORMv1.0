@@ -2,6 +2,7 @@ package com.orm.v_1.ORM.queryspecification;
 
 import java.util.List;
 
+import com.orm.v_1.ORM.queryspecification.builder.SpecificationBuilder;
 import com.orm.v_1.ORM.queryspecification.model.Condition;
 
 public class Specification {
@@ -35,6 +36,10 @@ public class Specification {
 	
 	public Boolean getReverse() {
 		return reverse;
+	}
+	
+	public static SpecificationBuilder builder () {
+		return new SpecificationBuilder();
 	}
 
 	@Override
