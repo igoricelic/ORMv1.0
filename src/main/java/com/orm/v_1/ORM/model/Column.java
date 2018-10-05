@@ -1,5 +1,7 @@
 package com.orm.v_1.ORM.model;
 
+import java.lang.reflect.Field;
+
 import com.orm.v_1.ORM.enums.ColumnType;
 
 public class Column {
@@ -17,8 +19,13 @@ public class Column {
 	private boolean primaryKey;
 	
 	private boolean unique;
+	
+	/**
+	 * Field in entity class
+	 */
+	private Field field;
 
-	public Column(String nameInModel, String nameInDb, ColumnType type, int length, boolean notNull, boolean primaryKey, boolean unique) {
+	public Column(String nameInModel, String nameInDb, ColumnType type, Field field, int length, boolean notNull, boolean primaryKey, boolean unique) {
 		super();
 		this.nameInModel = nameInModel;
 		this.nameInDb = nameInDb;
@@ -27,6 +34,7 @@ public class Column {
 		this.notNull = notNull;
 		this.primaryKey = primaryKey;
 		this.unique = unique;
+		this.field = field;
 	}
 
 	public String getNameInModel() {
@@ -55,6 +63,10 @@ public class Column {
 	
 	public boolean isUnique() {
 		return unique;
+	}
+	
+	public Field getField() {
+		return field;
 	}
 	
 	public String createQuery () {

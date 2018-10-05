@@ -1,5 +1,7 @@
 package com.orm.v_1.ORM.model;
 
+import java.lang.reflect.Field;
+
 import com.orm.v_1.ORM.enums.ColumnType;
 
 public class ForeignKey extends Column {
@@ -22,9 +24,9 @@ public class ForeignKey extends Column {
 		}
 	}
 	
-	public ForeignKey(String nameInModel, String nameInDb, ColumnType type, int length, boolean notNull,
+	public ForeignKey(String nameInModel, String nameInDb, ColumnType type, Field field, int length, boolean notNull,
 			String keyName, int relationType, Table owner, Table refTable) {
-		super(nameInModel, nameInDb, type, length, notNull, false, false);
+		super(nameInModel, nameInDb, type, field, length, notNull, false, false);
 		this.keyName = keyName;
 		this.owner = owner;
 		this.refTable = refTable;

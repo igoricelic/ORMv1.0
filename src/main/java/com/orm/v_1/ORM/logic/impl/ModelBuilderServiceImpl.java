@@ -109,10 +109,10 @@ public class ModelBuilderServiceImpl implements ModelBuilderService {
 		}
 		
 		if(isId) {
-			return new Id(nameInModel, nameInDb, length, autoIncrement);
+			return new Id(nameInModel, nameInDb, field, length, autoIncrement);
 		}
 		
-		return new Column(nameInModel, nameInDb, type, length, notNull, false, isUnique);
+		return new Column(nameInModel, nameInDb, type, field, length, notNull, false, isUnique);
 	}
 
 }

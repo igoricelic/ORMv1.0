@@ -16,7 +16,9 @@ public interface CrudRepository<T> extends Repository<T> {
 	
 	public Boolean saveMore (List<T> objects);
 	
-	public Boolean updateOne (T object);
+	public Boolean saveMoreAnotherWay (List<T> objects);
+	
+	public T updateOne (T object);
 	
 	public Boolean updateMore (List<T> objects);
 	

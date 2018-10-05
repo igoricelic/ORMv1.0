@@ -21,7 +21,6 @@ import com.orm.v_1.ORM.model.Column;
 import com.orm.v_1.ORM.model.Database;
 import com.orm.v_1.ORM.model.Id;
 import com.orm.v_1.ORM.model.Table;
-import com.orm.v_1.ORM.query.Query;
 import com.orm.v_1.ORM.queryspecification.Specification;
 import com.orm.v_1.ORM.queryspecification.generator.GeneratedResult;
 import com.orm.v_1.ORM.queryspecification.generator.SpecificationQueryGenerator;
@@ -123,7 +122,7 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 			idx = 1;
 			for (Column column : table.getColumns()) {
 				if(column.isPrimaryKey() && id.isAutoIncrement()) continue;
-				Field field = object.getClass().getDeclaredField(column.getNameInModel());
+				Field field = column.getField();
 				field.setAccessible(true);
 				Object value = field.get(object);
 				preparedStatement.setObject(idx, value);
@@ -136,7 +135,7 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 			
 			if (id.isAutoIncrement() && rs != null && rs.next()) {
 				Integer genValue = rs.getInt(GENERATED_KEY_COLUMN_NAME);
-				Field priKeyField = object.getClass().getDeclaredField(id.getNameInModel());
+				Field priKeyField = id.getField();
 				priKeyField.setAccessible(true);
 				priKeyField.set(object, genValue);
 			}
@@ -154,6 +153,21 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 			save(object);
 		}
 		return true;
+	}
+	
+	@Override
+	public Boolean saveMoreAnotherWay(List<T> objects) {
+		try {
+			if(objects.size() == 0) return true;
+			Class<?> entityClass = objects.get(0).getClass();
+			Table table = this.database.getTableForEntityClass(entityClass);
+			String query = "INSERT INTO %s VALUES ";
+			
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	@Override
@@ -190,15 +204,14 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 				for (Column column : table.getColumns()) {
 					columnName = column.getNameInDb();
 					value = rs.getObject(columnName);
-					field = entity.getDeclaredField(column.getNameInModel());
+					field = column.getField();
 					field.setAccessible(true);
 					field.set(object, value);
 				}
 				results.add(object);
 			}
 			return results;
-		} catch (SQLException | IllegalArgumentException | IllegalAccessException | NoSuchFieldException
-				| SecurityException | InstantiationException e) {
+		} catch (SQLException | IllegalArgumentException | IllegalAccessException | SecurityException | InstantiationException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -216,14 +229,13 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 				for (Column column : table.getColumns()) {
 					columnName = column.getNameInDb();
 					value = rs.getObject(columnName);
-					field = entity.getDeclaredField(column.getNameInModel());
+					field = column.getField();
 					field.setAccessible(true);
 					field.set(object, value);
 				}
 			}
 			return object;
-		} catch (SQLException | IllegalArgumentException | IllegalAccessException | NoSuchFieldException
-				| SecurityException | InstantiationException e) {
+		} catch (SQLException | IllegalArgumentException | IllegalAccessException | SecurityException | InstantiationException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -277,32 +289,28 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	}
 
 	@Override
-	public Boolean updateOne(T object) {
+	public T updateOne(T object) {
 		try {
 			Table table = database.getTableForEntityClass(object.getClass());
-			Field field = object.getClass().getDeclaredField(table.getId().getNameInModel());
+			Field field = table.getId().getField();
 			field.setAccessible(true);
 			Object idOfOriginalObject = field.get(object);
 			T original = findOne(idOfOriginalObject);
 			List<Column> modifiedColumns = new ArrayList<>();
-			Field fieldFromOriginal = null;
-			Field fieldFromObject = null;
 			for (Column column : table.getColumns()) {
-				fieldFromOriginal = original.getClass().getDeclaredField(column.getNameInModel());
-				fieldFromOriginal.setAccessible(true);
-				fieldFromObject = object.getClass().getDeclaredField(column.getNameInModel());
-				fieldFromObject.setAccessible(true);
-				if (fieldFromOriginal.get(original) == null && fieldFromObject.get(object) != null) {
+				field = column.getField();
+				if (field.get(original) == null && field.get(object) != null) {
 					modifiedColumns.add(column);
 					continue;
 				}
-				if (fieldFromOriginal.get(original) == null || fieldFromObject.get(object) == null)
+				if (field.get(original) == null || field.get(object) == null)
 					continue;
-				if (!fieldFromOriginal.get(original).equals(fieldFromObject.get(object))) {
+				if (!field.get(original).equals(field.get(object))) {
 					modifiedColumns.add(column);
 				}
 			}
 
+			// TODO: Smisliti bolji nacin
 			String set = "";
 			for (Column column : modifiedColumns) {
 				set = set + column.getNameInDb() + " = ?, ";
@@ -314,20 +322,19 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 			PreparedStatement preparedStatement = getConnection().prepareStatement(updateQuery);
 			int idx = 1;
 			for (Column column : modifiedColumns) {
-				fieldFromObject = object.getClass().getDeclaredField(column.getNameInModel());
-				fieldFromObject.setAccessible(true);
-				preparedStatement.setObject(idx, fieldFromObject.get(object));
+				field = column.getField();
+				preparedStatement.setObject(idx, field.get(object));
 				idx++;
 			}
 			preparedStatement.setObject(idx, idOfOriginalObject);
 			preparedStatement.execute();
-			return true;
+			return object;
 		} catch (Exception e) {
 			e.printStackTrace();
-			return false;
+			return null;
 		}
 	}
-
+	
 	@Override
 	public Page<T> findAll(PageRequest pageRequest) {
 		try {
@@ -360,7 +367,7 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	public Boolean deleteAll() {
 		try {
 			Table table = this.database.getTableForEntityClass(entity);
-			String query = String.format("DELETE * FROM %s WHERE %s > 0", table.getName(), table.getId().getNameInDb());
+			String query = String.format("DELETE FROM %s WHERE %s > 0", table.getName(), table.getId().getNameInDb());
 			if(logSqlQueries) logger.info(query);
 			PreparedStatement preparedStatement = getConnection().prepareStatement(query);
 			preparedStatement.execute();

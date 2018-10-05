@@ -1,6 +1,7 @@
 package com.orm.v_1.ORM.tests.test1;
 
 import java.util.Date;
+import java.util.List;
 
 import com.orm.v_1.ORM.configuration.OrmConfig;
 import com.orm.v_1.ORM.tests.test1.entities.Proffesor;
@@ -13,6 +14,14 @@ public class MainTest2 {
 			OrmConfig.setConfiguration(path);
 			
 			ProffesorDao proffesorDao = (ProffesorDao) OrmConfig.buildProxy(ProffesorDao.class, Proffesor.class);
+			
+			// proffesorDao.deleteAll();
+			List<Proffesor> proffesors = proffesorDao.findAll();
+			for(Proffesor proffesor: proffesors) {
+				String newLicence = proffesor.getLicence() + "-101";
+				proffesor.setLicence(newLicence);
+				proffesorDao.updateOne(proffesor);
+			}
 			
 			Proffesor p1 = new Proffesor();
 			p1.setDateOfBirth(new Date());

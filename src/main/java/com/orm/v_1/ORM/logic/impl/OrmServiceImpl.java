@@ -47,7 +47,6 @@ public class OrmServiceImpl implements ORM {
 			throws NoSuchFieldException, SecurityException, SQLException, ClassNotFoundException, TableNotFoundException, NotSuportTypeException, ColumnNotFoundException, NotCompatibleTypesException {
 		this.databaseName = databaseName;
 		this.connection = getConnection();
-		this.connection.setCatalog(databaseName);
 
 		this.database = modelBuilder.buildModel(this.databaseName, entities);
 		if (createTables) createTables();

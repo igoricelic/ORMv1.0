@@ -1,13 +1,15 @@
 package com.orm.v_1.ORM.model;
 
+import java.lang.reflect.Field;
+
 import com.orm.v_1.ORM.enums.ColumnType;
 
 public class Id extends Column {
 	
 	private boolean autoIncrement;
 
-	public Id(String nameInModel, String nameInDb, int length, boolean autoIncrement) {
-		super(nameInModel, nameInDb, ColumnType.INT, length, true, true, true);
+	public Id(String nameInModel, String nameInDb, Field field, int length, boolean autoIncrement) {
+		super(nameInModel, nameInDb, ColumnType.INT, field, length, true, true, true);
 		this.autoIncrement = autoIncrement;
 	}
 	
