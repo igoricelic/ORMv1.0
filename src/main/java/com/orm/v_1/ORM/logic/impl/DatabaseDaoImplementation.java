@@ -161,7 +161,38 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 			if(objects.size() == 0) return true;
 			Class<?> entityClass = objects.get(0).getClass();
 			Table table = this.database.getTableForEntityClass(entityClass);
-			String query = "INSERT INTO %s VALUES ";
+			StringBuilder sbQuery = new StringBuilder(10000);
+			sbQuery.append("INSERT INTO %s VALUES ");
+			
+			StringBuilder sbValues = new StringBuilder(50);
+			int idx = 0;
+			for (Column column : table.getColumns()) {
+				if(column.isPrimaryKey() && table.getId().isAutoIncrement()) continue;
+				if (idx == 0) {
+					sbValues.append("?");
+				} else {
+					sbValues.append(", ?");
+				}
+				idx++;
+			}
+			sbQuery.append(sbValues.toString());
+			for(int i=1; i<objects.size(); i++) sbQuery.append(", ").append(sbValues.toString());
+			
+			PreparedStatement preparedStatement = this.getConnection().prepareStatement(sbQuery.toString());
+			
+			for(T object: objects) {
+				idx = 1;
+				for (Column column : table.getColumns()) {
+					if(column.isPrimaryKey() && table.getId().isAutoIncrement()) continue;
+					Field field = column.getField();
+					field.setAccessible(true);
+					Object value = field.get(object);
+					preparedStatement.setObject(idx, value);
+					idx++;
+				}
+			}
+			
+			preparedStatement.executeUpdate();
 			
 			return true;
 		} catch (Exception e) {

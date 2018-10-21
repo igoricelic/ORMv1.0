@@ -13,6 +13,8 @@ import com.orm.v_1.ORM.queryspecification.model.Condition;
 
 public class SpecificationQueryGeneratorImpl implements SpecificationQueryGenerator {
 
+	
+	
 	@Override
 	public GeneratedResult generateQuery(Specification specification, Table table) throws ColumnNotFoundException, NotCompatibleTypesException{
 		StringBuilder query = new StringBuilder(300);
