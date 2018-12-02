@@ -40,7 +40,7 @@ public class MainTest1 {
 			p1.setLicence("1AK35LP0");
 
 			System.out.println("Before: " + p1.toString());
-			proffesorDao.save(p1);
+			proffesorDao.saveOne(p1);
 			System.out.println("After: " + p1.toString());
 
 			List<Proffesor> proffesors = proffesorDao.findAll();
@@ -57,7 +57,7 @@ public class MainTest1 {
 			sub.setValue(8);
 			sub.setCodeIdef("1PL045");
 
-			subjectDao.save(sub);
+			subjectDao.saveOne(sub);
 
 			List<Subject> subjects = subjectDao.findAll();
 			System.out.println(subjects);
@@ -69,7 +69,7 @@ public class MainTest1 {
 			s1.setValue(8);
 
 			System.out.println("Before: " + s1.toString());
-			subjectDao.save(s1);
+			subjectDao.saveOne(s1);
 			System.out.println("After: " + s1.toString());
 
 			List<Subject> subjects1 = subjectDao.findAll();
@@ -99,7 +99,7 @@ public class MainTest1 {
 			c11.setSubjectId(1);
 
 			System.out.println("Before: " + c11.toString());
-			classDao.save(c11);
+			classDao.saveOne(c11);
 			System.out.println("After: " + c11.toString());
 
 			List<SClass> classes = classDao.findAll();

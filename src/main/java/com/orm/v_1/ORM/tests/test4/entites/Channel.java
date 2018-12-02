@@ -1,7 +1,6 @@
 package com.orm.v_1.ORM.tests.test4.entites;
 
 import java.util.Date;
-
 import com.orm.v_1.ORM.annotations.Id;
 import com.orm.v_1.ORM.annotations.Table;
 import com.orm.v_1.ORM.annotations.Unique;

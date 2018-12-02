@@ -10,9 +10,12 @@ public class PageRequest {
 	
 	private Integer size;
 	
-	private PageRequest (Integer page, Integer size) {
+	private Integer offset;
+	
+	public PageRequest (Integer page, Integer size) {
 		this.page = page;
 		this.size = size;
+		this.offset = page * size;
 	}
 	
 	public Integer getPage() {
@@ -21,6 +24,10 @@ public class PageRequest {
 	
 	public Integer getSize() {
 		return size;
+	}
+	
+	public Integer getOffset() {
+		return offset;
 	}
 	
 	public static PageRequest build (Integer page, Integer size) {

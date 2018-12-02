@@ -4,19 +4,19 @@ import java.util.List;
 
 public interface CrudRepository<T> extends Repository<T> {
 	
+	public T findOne ();
+	
 	public List<T> findAll ();
 	
-	public T findOne (Object id);
+	public Boolean deleteOne (T object);
 	
-	public Boolean delete (Object id);
+	public Boolean deleteMode (List<T> objects);
 	
 	public Boolean deleteAll ();
 	
-	public T save (T object);
+	public T saveOne (T object);
 	
 	public Boolean saveMore (List<T> objects);
-	
-	public Boolean saveMoreAnotherWay (List<T> objects);
 	
 	public T updateOne (T object);
 	

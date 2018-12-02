@@ -5,6 +5,7 @@ import java.util.List;
 import com.orm.v_1.ORM.model.Database;
 import com.orm.v_1.ORM.query.criterion.enums.QueryOperator;
 
+@Deprecated
 public class UnionCriteria implements CriterionModel {
 	private List<CriterionModel> listCriterions;
 	private QueryOperator operator;

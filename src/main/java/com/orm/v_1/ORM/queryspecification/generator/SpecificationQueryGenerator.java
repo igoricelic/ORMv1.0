@@ -7,6 +7,6 @@ import com.orm.v_1.ORM.queryspecification.Specification;
 
 public interface SpecificationQueryGenerator {
 	
-	public GeneratedResult generateQuery (Specification specification, Table table) throws ColumnNotFoundException, NotCompatibleTypesException;
+	public GeneratedResult generateQuery (Specification specification, Table table, QueryType queryType) throws ColumnNotFoundException, NotCompatibleTypesException;
 
 }

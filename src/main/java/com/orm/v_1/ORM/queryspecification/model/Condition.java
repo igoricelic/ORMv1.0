@@ -14,6 +14,11 @@ public class Condition {
 	private Operator operator;
 	
 	public Condition(String field, Object value, Comparator comparator) {
+		if (comparator == Comparator.Contains) {
+			if(value instanceof String) {
+				value = (String) "%" + value + "%";
+			}
+		}
 		this.field = field;
 		this.value = value;
 		this.comparator = comparator;

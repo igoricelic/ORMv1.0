@@ -15,6 +15,8 @@ import java.util.logging.Logger;
 import com.orm.v_1.ORM.datastructure.Page;
 import com.orm.v_1.ORM.datastructure.PageImplementation;
 import com.orm.v_1.ORM.datastructure.PageRequest;
+import com.orm.v_1.ORM.datastructure.SortRequest;
+import com.orm.v_1.ORM.exceptions.ObjectNotFoundException;
 import com.orm.v_1.ORM.logic.repositories.CrudRepository;
 import com.orm.v_1.ORM.logic.repositories.ProxyRepository;
 import com.orm.v_1.ORM.model.Column;
@@ -23,6 +25,8 @@ import com.orm.v_1.ORM.model.Id;
 import com.orm.v_1.ORM.model.Table;
 import com.orm.v_1.ORM.queryspecification.Specification;
 import com.orm.v_1.ORM.queryspecification.generator.GeneratedResult;
+import com.orm.v_1.ORM.queryspecification.generator.QueryType;
+import com.orm.v_1.ORM.queryspecification.generator.SpecQueryGeneratorImpl;
 import com.orm.v_1.ORM.queryspecification.generator.SpecificationQueryGenerator;
 import com.orm.v_1.ORM.queryspecification.generator.SpecificationQueryGeneratorImpl;
 
@@ -61,41 +65,41 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 			return null;
 		}
 	}
-
+	
 	@Override
-	public T findOne(Object id) {
+	public T findOne() {
 		try {
 			Table table = database.getTableForEntityClass(entity);
-			String query = String.format("SELECT * FROM %s WHERE %s = ?", table.getName(), table.getId().getNameInDb());
+			String query = String.format("SELECT * FROM %s LIMIT 1;", table.getName());
 			if(logSqlQueries) logger.info(query);
 			PreparedStatement preparedStatement = getConnection().prepareStatement(query);
-			preparedStatement.setObject(1, id);
 			ResultSet rs = preparedStatement.executeQuery();
 			return extractObjectFromResultSet(rs);
-		} catch (SQLException | SecurityException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
 
 	@Override
-	public Boolean delete(Object id) {
+	public Boolean deleteOne(T object) {
 		try {
 			Table table = database.getTableForEntityClass(entity);
 			String query = String.format("DELETE FROM %s WHERE %s = ?", table.getName(), table.getId().getNameInDb());
 			PreparedStatement preparedStatement = getConnection().prepareStatement(query);
 			if(logSqlQueries) logger.info(query);
+			Object id = table.getId().getField().get(object);
 			preparedStatement.setObject(1, id);
 			preparedStatement.execute();
 			return true;
-		} catch (SQLException e) {
+		} catch (SQLException | IllegalArgumentException | IllegalAccessException e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
 
 	@Override
-	public T save(T object) {
+	public T saveOne(T object) {
 		try {
 			Table table = this.database.getTableForEntityClass(object.getClass());
 			String query = "INSERT INTO %s (%s) VALUES (%s)";
@@ -150,12 +154,12 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 	@Override
 	public Boolean saveMore(List<T> objects) {
 		for (T object : objects) {
-			save(object);
+			saveOne(object);
 		}
 		return true;
 	}
 	
-	@Override
+	//@Override
 	public Boolean saveMoreAnotherWay(List<T> objects) {
 		try {
 			if(objects.size() == 0) return true;
@@ -326,7 +330,9 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 			Field field = table.getId().getField();
 			field.setAccessible(true);
 			Object idOfOriginalObject = field.get(object);
-			T original = findOne(idOfOriginalObject);
+			Optional<T> optOriginal = findById(idOfOriginalObject);
+			if(!optOriginal.isPresent()) throw new ObjectNotFoundException("Object does not exist!");
+			T original = optOriginal.get();
 			List<Column> modifiedColumns = new ArrayList<>();
 			for (Column column : table.getColumns()) {
 				field = column.getField();
@@ -411,25 +417,26 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 
 	@Override
 	public Optional<T> findById(Object id) {
-		T object = findOne(id);
-		return Optional.ofNullable(object); 
+		try {
+			Table table = this.database.getTableForEntityClass(entity);
+			String query = String.format("SELECT * FROM %s WHERE %s = ?;", table.getName(), table.getId().getNameInDb());
+			if(logSqlQueries) logger.info(query);
+			PreparedStatement preparedStatement = getConnection().prepareStatement(query);
+			preparedStatement.setObject(1, id);
+			ResultSet rs = preparedStatement.executeQuery();
+			T object = extractObjectFromResultSet(rs);
+			return Optional.ofNullable(object);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Optional.ofNullable(null);
+		} 
 	}
 
 	@Override
 	public Optional<List<T>> findBySpecification(Specification specification) {
 		try {
-			Table table = this.database.getTableForEntityClass(entity);
-			SpecificationQueryGenerator specificationQueryGenerator = new SpecificationQueryGeneratorImpl();
-			GeneratedResult generatedResult = specificationQueryGenerator.generateQuery(specification, table);
-			if(logSqlQueries) logger.info(generatedResult.getQuery());
-			PreparedStatement preparedStatement = getConnection().prepareStatement(generatedResult.getQuery());
-			int idx = 1;
-			for(Object arg: generatedResult.getArgs()) {
-				preparedStatement.setObject(idx, arg);
-				idx++;
-			}
-			ResultSet rs = preparedStatement.executeQuery();
-			return Optional.ofNullable(extractListFromResultSet(rs));
+			List<T> results = searchBySpecification(specification);
+			return Optional.ofNullable(results);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -438,8 +445,115 @@ public class DatabaseDaoImplementation<T> implements ProxyRepository<T> {
 
 	@Override
 	public Optional<Page<T>> findBySpecification(Specification specification, PageRequest pageRequest) {
+		List<T> fullResults = searchBySpecification(specification);
+		Page<T> pageOfResults = listToPage(fullResults, pageRequest);
+		return Optional.ofNullable(pageOfResults);
+	}
+	
+	public static <T> Page<T> listToPage (List<T> list, PageRequest pageable) {
+		int start = Math.toIntExact(pageable.getOffset());
+		int end = Math.toIntExact((start + pageable.getSize()) > list.size() ? list.size() : (start + pageable.getSize()));
+		List<T> content = list.subList(start, end);
+		Double totalPages = list.size() / (double) pageable.getSize();
+		return new PageImplementation<T>(content, pageable.getPage(), pageable.getSize(), content.size(), (int) Math.ceil(totalPages), list.size(), (pageable.getPage() == 0), (pageable.getPage().equals((int)Math.ceil(totalPages)-1)));
+	}
+	
+	private List<T> searchBySpecification (Specification specification) {
+		try {
+			PreparedStatement preparedStatement = preparedStatementBySpecificationAndQueryType(specification, QueryType.SELECT);
+			ResultSet rs = preparedStatement.executeQuery();
+			return extractListFromResultSet(rs);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	private PreparedStatement preparedStatementBySpecificationAndQueryType (Specification specification, QueryType queryType) {
+		try {
+			Table table = this.database.getTableForEntityClass(entity);
+			SpecificationQueryGenerator specificationQueryGenerator = new SpecQueryGeneratorImpl();			
+			GeneratedResult generatedResult = specificationQueryGenerator.generateQuery(specification, table, QueryType.SELECT);
+			if(logSqlQueries) logger.info(generatedResult.getQuery());
+			PreparedStatement preparedStatement = getConnection().prepareStatement(generatedResult.getQuery());
+			int idx = 1;
+			for(Object arg: generatedResult.getArgs()) {
+				preparedStatement.setObject(idx, arg);
+				idx++;
+			}
+			return preparedStatement;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	@Override
+	public Boolean deleteMode(List<T> objects) {
+		objects.stream().forEach(object -> deleteOne(null));
+		return true;
+	}
+
+	@Override
+	public Boolean existsById() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public Integer countBySpecification(Specification specification) {
+		try {
+			PreparedStatement preparedStatement = preparedStatementBySpecificationAndQueryType(specification, QueryType.COUNT);
+			ResultSet rs = preparedStatement.executeQuery();
+			return rs.getInt("count");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	@Override
+	public Boolean deleteBySpecification(Specification specification) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Boolean existsBySpecification(Specification specification) {
+		try {
+			
+			return null;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	@Override
+	public List<T> findAll(SortRequest sortRequest) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Page<T> findAll(PageRequest pageRequest, SortRequest sortRequest) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Integer countAll() {
+		try {
+			Table table = this.database.getTableForEntityClass(entity);
+			String query = String.format("SELECT COUNT(*) AS count FROM %s", table.getName());
+			if(logSqlQueries) logger.info(query);
+			PreparedStatement preparedStatement = getConnection().prepareStatement(query);
+			ResultSet rs = preparedStatement.executeQuery();
+			return rs.getInt("count");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 }

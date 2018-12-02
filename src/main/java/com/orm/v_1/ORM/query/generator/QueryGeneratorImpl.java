@@ -8,6 +8,7 @@ import com.orm.v_1.ORM.exceptions.ColumnNotFoundException;
 import com.orm.v_1.ORM.model.Column;
 import com.orm.v_1.ORM.model.Table;
 
+@Deprecated
 public class QueryGeneratorImpl implements QueryGenerator {
 	
 	public enum Type {
@@ -17,6 +18,7 @@ public class QueryGeneratorImpl implements QueryGenerator {
 	private Type type;
 
 	@Override
+	@Deprecated
 	public String generateQuery(String specification, Table table, Object[] args) throws ColumnNotFoundException {
 		String query = "%s * FROM %s WHERE %s;";
 		List<Column> columns = new ArrayList<>();

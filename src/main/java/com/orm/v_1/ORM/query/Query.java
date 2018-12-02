@@ -3,6 +3,7 @@ package com.orm.v_1.ORM.query;
 import com.orm.v_1.ORM.model.Database;
 import com.orm.v_1.ORM.query.criterion.CriterionModel;
 
+@Deprecated
 public class Query {
 	private Database db;
 	private Class<?> entity;

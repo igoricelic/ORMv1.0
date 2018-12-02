@@ -7,6 +7,7 @@ import java.util.Date;
 import com.orm.v_1.ORM.model.Database;
 import com.orm.v_1.ORM.query.criterion.enums.ComparationOperator;
 
+@Deprecated
 public class Criterion implements CriterionModel {
 	private Class<?> entity;
 	private Database databaseModel;

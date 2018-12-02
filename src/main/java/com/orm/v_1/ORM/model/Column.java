@@ -20,6 +20,8 @@ public class Column {
 	
 	private boolean unique;
 	
+	private Class<?> clazz;
+	
 	/**
 	 * Field in entity class
 	 */
@@ -67,6 +69,14 @@ public class Column {
 	
 	public Field getField() {
 		return field;
+	}
+	
+	public Class<?> getClazz() {
+		return clazz;
+	}
+	
+	public void setClazz(Class<?> clazz) {
+		this.clazz = clazz;
 	}
 	
 	public String createQuery () {

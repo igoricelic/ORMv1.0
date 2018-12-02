@@ -23,7 +23,7 @@ public class MainTest {
 			List<Administrator> lA = administratorDao.findAll();
 			
 			for(Administrator administrator: administratorDao.findAll()) {
-				administratorDao.delete(administrator.getId());
+				administratorDao.deleteOne(administrator);
 			}
 			
 			Administrator a1 = new Administrator();
@@ -34,7 +34,7 @@ public class MainTest {
 			a1.setFavoriteNumber(10);
 			a1.setPassword("pera");
 	
-			administratorDao.save(a1);
+			administratorDao.saveOne(a1);
 	
 			Administrator a2 = new Administrator();
 			a2.setName("Mika");
@@ -44,7 +44,7 @@ public class MainTest {
 			a2.setFavoriteNumber(13);
 			a2.setPassword("mika");
 	
-			administratorDao.save(a2);
+			administratorDao.saveOne(a2);
 	
 			Administrator a3 = new Administrator();
 			a3.setName("Zika");
@@ -54,7 +54,7 @@ public class MainTest {
 			a3.setFavoriteNumber(7);
 			a3.setPassword("zika");
 	
-			administratorDao.save(a3);
+			administratorDao.saveOne(a3);
 	
 			Administrator a4 = new Administrator();
 			a4.setName("Pera");
@@ -64,7 +64,7 @@ public class MainTest {
 			a4.setFavoriteNumber(5);
 			a4.setPassword("dugalic");
 
-			administratorDao.save(a4);
+			administratorDao.saveOne(a4);
 			
 			List<Administrator> adminsPage = administratorDao.findByNameEqLimitFrom("Pera", 0, 5);
 			System.out.println(adminsPage);

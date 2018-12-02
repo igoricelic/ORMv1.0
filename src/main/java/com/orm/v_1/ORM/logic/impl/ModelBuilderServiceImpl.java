@@ -98,8 +98,8 @@ public class ModelBuilderServiceImpl implements ModelBuilderService {
 			}
 		}
 
+		Class<?> fieldClass = field.getType();
 		if(type == ColumnType.AUTO) {
-			Class<?> fieldClass = field.getType();
 			ColumnType colType = ColumnType.getTypeByClass(fieldClass);
 			if(colType == null) throw new NotSuportTypeException("Not suport Column type " + fieldClass);
 			type = colType;
@@ -109,10 +109,14 @@ public class ModelBuilderServiceImpl implements ModelBuilderService {
 		}
 		
 		if(isId) {
-			return new Id(nameInModel, nameInDb, field, length, autoIncrement);
+			Id column = new Id(nameInModel, nameInDb, field, length, autoIncrement);
+			column.setClazz(fieldClass);
+			return column;
 		}
 		
-		return new Column(nameInModel, nameInDb, type, field, length, notNull, false, isUnique);
+		Column column = new Column(nameInModel, nameInDb, type, field, length, notNull, false, isUnique);
+		column.setClazz(fieldClass);
+		return column;
 	}
 
 }

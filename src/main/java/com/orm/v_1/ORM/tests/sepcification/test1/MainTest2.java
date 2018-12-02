@@ -3,7 +3,7 @@ package com.orm.v_1.ORM.tests.sepcification.test1;
 import com.orm.v_1.ORM.configuration.OrmConfig;
 import com.orm.v_1.ORM.logic.repositories.CrudRepository;
 import com.orm.v_1.ORM.logic.repositories.OrmRepository;
-import com.orm.v_1.ORM.logic.repositories.PagingRepository;
+import com.orm.v_1.ORM.logic.repositories.PagingAndSortingRepository;
 import com.orm.v_1.ORM.logic.repositories.Repository;
 import com.orm.v_1.ORM.tests.sepcification.test1.entites.Channel;
 
@@ -18,7 +18,7 @@ public class MainTest2 {
 			
 			CrudRepository<Channel> crudChannelDao = (CrudRepository<Channel>) OrmConfig.buildRepository(Channel.class);
 			
-			PagingRepository<Channel> pagingChannelDao = (PagingRepository<Channel>) OrmConfig.buildRepository(Channel.class);
+			PagingAndSortingRepository<Channel> pagingChannelDao = (PagingAndSortingRepository<Channel>) OrmConfig.buildRepository(Channel.class);
 			
 			OrmRepository<Channel> ormChannelDao = (OrmRepository<Channel>) OrmConfig.buildRepository(Channel.class);
 			

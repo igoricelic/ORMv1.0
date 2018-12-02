@@ -58,7 +58,7 @@ public class SpecificationBuilder implements Observer {
 	
 	public Specification build () {
 		try {
-			Constructor<Specification> constructor = (Constructor<Specification>) Specification.class.getConstructors()[0];
+			Constructor<Specification> constructor = (Constructor<Specification>) Specification.class.getDeclaredConstructors()[0];
 			constructor.setAccessible(true);
 			return constructor.newInstance(conditions, limit, orderByColumn, reverse);
 		} catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {

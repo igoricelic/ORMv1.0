@@ -7,5 +7,7 @@ public interface Repository<T> {
 	public List<T> findByNativeQuery(String query);
 
 	public Boolean executeNativeQuery(String query);
+	
+	public Integer countAll();
 
 }

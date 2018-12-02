@@ -28,21 +28,21 @@ public class MainTest2 {
 			p1.setLicence("A64-301");
 			p1.setName("Pera");
 			p1.setSurname("Peric");
-			proffesorDao.save(p1);
+			proffesorDao.saveOne(p1);
 			
 			Proffesor p2 = new Proffesor();
 			p2.setDateOfBirth(new Date());
 			p2.setLicence("B78-117");
 			p2.setName("Pera");
 			p2.setSurname("Grubic");
-			proffesorDao.save(p2);
+			proffesorDao.saveOne(p2);
 			
 			Proffesor p3 = new Proffesor();
 			p3.setDateOfBirth(new Date());
 			p3.setLicence("C21-Q16");
 			p3.setName("Mika");
 			p3.setSurname("Mikic");
-			proffesorDao.save(p3);
+			proffesorDao.saveOne(p3);
 			
 			System.out.println(proffesorDao.findAll());
 			
